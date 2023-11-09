@@ -39,18 +39,15 @@ HEX_CONSTANT 0[xX]{HEX_DIGIT}+
 
 INTEGER_CONSTANT {DECIMAL_CONSTANT}|{OCTAL_CONSTANT}|{HEX_CONSTANT}
 
-C_CHAR [^']|\\.
+C_CHAR [^'\n]|\\.
 
 C_CHAR_SEQUENCE {C_CHAR}*
 
-S_CHAR [^"]|\\.
+S_CHAR [^"\n]|\\.
 
 S_CHAR_SEQUENCE {S_CHAR}*
 
 IDENTIFIER {NONDIGIT}({NONDIGIT}|{DIGIT})*
-
-CONTROL_LINE ^#[ \t]*
-
 %%
 
 auto		{ return AUTO; }
@@ -91,28 +88,30 @@ while		{ return WHILE; }
 	return IDENTIFIER;
 }
 
-	/* Floating constants */
-{FLOATING_CONSTANT}{SUFFIX}? {
-	return FLOAT_CONSTANT;
-}
-
+	/* Integer constants */
 {INTEGER_CONSTANT}{SUFFIX}? {
 	return INTEGER_CONSTANT;
+}
+
+	/* Floating constants */
+({FLOATING_CONSTANT}{SUFFIX}? {
+	return FLOATING_CONSTANT;
 }
 
 	/* Character constants */
 \'{C_CHAR_SEQUENCE}\' {
 	yylloc.first_column += 1;
 	yylloc.last_column -= 1;
-	return INTEGER_CONSTANT;
+	return CHARACTER_CONSTANT
 }
 
 L\'{C_CHAR_SEQUENCE}\' {
 	yylloc.first_column += 2;
 	yylloc.last_column -= 1;
-	return INTEGER_CONSTANT;
+	return CHARACTER_CONSTANT;
 }
 
+	/* String literals */
 \"{S_CHAR_SEQUENCE}\" {
 	yylloc.first_column += 1;
 	yylloc.last_column -= 1;
@@ -125,56 +124,74 @@ L\"{S_CHAR_SEQUENCE}\" {
 	return STRING_LITERAL;
 }
 	/* Operators */
-\. { return DOT; }
-\-\> { return ARROW; }
-\+\+ { return INCREMENT; }
-\-\- { return DECREMENT; }
-\& { return AND; }
-\* { return STAR; }
-\+ { return PLUS; }
-\- { return MINUS; }
-\~ { return TILDE; }
-\! { return EXCLAMATION; }
-sizeof { return SIZEOF; }
-\/ { return SLASH; }
-\% { return PERCENT; }
+\.	{ return DOT; }
+\-\>	{ return ARROW; }
+\+\+	{ return INCREMENT; }
+\-\-	{ return DECREMENT; }
+\&	{ return AND; }
+\*	{ return STAR; }
+\+	{ return PLUS; }
+\-	{ return MINUS; }
+\~	{ return TILDE; }
+\!	{ return EXCLAMATION; }
+sizeof	{ return SIZEOF; }
+\/	{ return SLASH; }
+\%	{ return PERCENT; }
 
-\<\< { return LSHIFT; }
-\>\> { return RSHIFT; }
-\< { return LESS_THAN; }
-\> { return GREATER_THAN; }
-\<\= { return LESS_THAN_EQUAL; }
-\>\= { return GREATER_THAN_EQUAL; }
-\=\= { return EQUAL_EQUAL; }
-\!\= { return NOT_EQUAL; }
+\<\<	{ return LSHIFT; }
+\>\>	{ return RSHIFT; }
+\<	{ return LESS_THAN; }
+\>	{ return GREATER_THAN; }
+\<\=	{ return LESS_THAN_EQUAL; }
+\>\=	{ return GREATER_THAN_EQUAL; }
+\=\=	{ return EQUAL_EQUAL; }
+\!\=	{ return NOT_EQUAL; }
 
-\^ { return CARET; }
-\| { return PIPE; }
-\&\& { return AND_AND; }
-\|\| { return OR_OR; }
-\? { return QUESTION; }
-\: { return COLON; }
-\# { return HASH; }
-\#\# { return HASH_HASH; }
+\^	{ return XOR; }
+\|	{ return OR; }
+\&\&	{ return AND_AND; }
+\|\|	{ return OR_OR; }
+\?	{ return QUESTION; }
+\:	{ return COLON; }
+\#	{ return HASH; }
+\#\#	{ return HASH_HASH; }
 
-/* Punctuators */
-\[ { return LBRACKET; }
-\] { return RBRACKET; }
-\( { return LPAREN; }
-\) { return RPAREN; }
-\{ { return LBRACE; }
-\} { return RBRACE; }
-\; { return SEMICOLON; }
-\, { return COMMA; }
+=	{ return EQUAL; }
+*=	{ return STAR_EQUAL; }
+\/=	{ return SLASH_EQUAL; }
+%=	{ return PERCENT_EQUAL; }
+\+=	{ return PLUS_EQUAL; }
+-=	{ return MINUS_EQUAL; }
+<<=	{ return LSHIFT_EQUAL; }
+>>=	{ return RSHIFT_EQUAL; }
+&=	{ return AND_EQUAL; }
+^=	{ return XOR_EQUAL; }
+|=	{ return OR_EQUAL; }
 
+	/* Punctuators */
+\[	{ return LBRACKET; }
+\]	{ return RBRACKET; }
+\(	{ return LPAREN; }
+\)	{ return RPAREN; }
+\{	{ return LBRACE; }
+\}	{ return RBRACE; }
+\;	{ return SEMICOLON; }
+\,	{ return COMMA; }
+\.\.\.	{ return ELLIPSIS; }
+
+	/* Newlines */
 \n {
 	lineno++;
 	column = 1;
 	return NEWLINE;
 }
 
+	/* Whitespace */
+[ \t]+ { /* ignore whitespace */ }
+
 . {
-	return 
+	return yytext[0];
 }
+
 
 %%
