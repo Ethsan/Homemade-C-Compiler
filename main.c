@@ -1,10 +1,5 @@
 int main(int argc, char *argv[])
 {
-	return 0;
-}
-
-#
-
-int test(void) {
-	main(0, NULL);
+	char b[10] = "Hello";
+	char a = b[1.];
 }

@@ -213,6 +213,43 @@ specifier-qualifier-list
 	| type-qualifier specifier-qualifier-list
 	;
 
+declaration
+	: declaration-specifiers SEMICOLON
+	| declaration-specifiers init-declarator-list SEMICOLON
+	;
+
+declaration-list
+	: declaration
+	| declaration-list declaration
+	;
+
+declaration-specifiers
+	: storage-class-specifier
+	| storage-class-specifier declaration-specifiers
+	| type-specifier 
+	| type-specifier declaration-specifiers
+	| type-qualifier
+	| type-qualifier declaration-specifiers
+	;
+	
+init-declarator-list
+	: init-declarator
+	| init-declarator-list COMMA init-declarator
+	;
+
+init-declarator
+	: declarator
+	| declarator EQUAL initializer
+	;
+
+storage-class-specifier
+	: TYPEDEF
+	| EXTERN
+	| STATIC
+	| AUTO
+	| REGISTER
+	;
+
 type-specifier
 	: VOID
 	| CHAR
@@ -231,7 +268,6 @@ type-specifier
 typedef-name
 	: IDENTIFIER
 	;
-
 struct-or-union-specifier
 	: struct-or-union LBRACE struct-declaration-list RBRACE
 	| struct-or-union IDENTIFIER
@@ -281,4 +317,87 @@ direct-declarator
 identifier-list
 	: IDENTIFIER
 	| identifier-list COMMA IDENTIFIER
+	;
+initializer
+	: assignment-expression
+	| LBRACE initializer-list RBRACE
+	| LBRACE initializer-list COMMA RBRACE
+	;
+
+enum-specifier
+	: ENUM LBRACE enumerator-list RBRACE
+	| ENUM IDENTIFIER LBRACE enumerator-list RBRACE
+	| ENUM IDENTIFIER
+	;
+	 
+statement
+	: labeled-statement
+	| compound-statement
+	| expression-statement
+	| selection-statement
+	| iteration-statement
+	| jump-statement
+	;
+
+statement-list
+	: statement
+	| statement-list statement
+	;
+
+labeled-statement
+	: IDENTIFIER COLON statement
+	| CASE constant-expression COLON statement
+	| DEFAULT COLON statement
+	;
+
+constant-expression
+	: conditional-expression
+	;
+
+compound-statement
+	: LBRACE RBRACE
+	| LBRACE statement-list RBRACE
+	| LBRACE declaration-list RBRACE
+	| LBRACE declaration-list statement-list RBRACE
+	;
+
+expression-statement
+	: SEMICOLON
+	| expression SEMICOLON
+	;
+
+selection-statement
+	: IF LPAREN expression RPAREN statement
+	| IF LPAREN expression RPAREN statement ELSE statement
+	| SWITCH LPAREN expression RPAREN statement
+	;
+
+iteration-statement
+	: WHILE LPAREN expression RPAREN statement
+	| DO statement WHILE LPAREN expression RPAREN SEMICOLON
+	| FOR LPAREN expression-statement expression-statement RPAREN statement
+	;
+
+jump-statement
+	: GOTO IDENTIFIER SEMICOLON
+	| CONTINUE SEMICOLON
+	| BREAK SEMICOLON
+	| RETURN SEMICOLON
+	| RETURN expression SEMICOLON
+	;
+
+translation-unit
+	: external-declaration
+	| translation-unit external-declaration
+	;
+
+external-declaration
+	: function-definition
+	| declaration
+	;
+
+function-definition
+	: declaration-specifiers declarator
+	| compound-statement
+	| declaration-list compound-statement
 	;
