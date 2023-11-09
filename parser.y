@@ -17,7 +17,7 @@ void yyerror (const char * msg);
 	PERCENT_EQUAL PLUS_EQUAL MINUS_EQUAL LSHIFT_EQUAL \
 	RSHIFT_EQUAL AND_EQUAL XOR_EQUAL OR_EQUAL \
 	PLUS_PLUS MINUS_MINUS COLON QUESTION OR_OR AND_AND \
-	OR XOR
+	OR XOR ELLIPSIS SEMICOLON
 
 
 %start program
@@ -181,7 +181,104 @@ type-qualifier
 direct-abstract-declarator
 	: LPAREN abstract-declarator RPAREN
 	| LBRACKET RBRACKET
-	| LBRACKET constant-expression RBRACKET
+	| LBRACKET conditional-expression RBRACKET
 	| direct-abstract-declarator LBRACKET RBRACKET
+	| direct-abstract-declarator LBRACKET conditional-expression RBRACKET
+	| LPAREN RPAREN
+	| LPAREN parameter-type-list RPAREN
+	| direct-abstract-declarator LPAREN RPAREN
+	| direct-abstract-declarator LPAREN parameter-type-list RPAREN
+	;
 
+parameter-type-list
+	: parameter-list
+	| parameter-list COMMA ELLIPSIS
+	;
 
+parameter-list
+	: parameter-declaration
+	| parameter-list COMMA parameter-declaration
+	;
+
+parameter-declaration
+	: declaration-specifiers declarator
+	| declaration-specifiers abstract-declarator
+	| declaration-specifiers
+	;
+
+specifier-qualifier-list
+	: type-specifier 
+	| type-qualifier
+	| type-specifier specifier-qualifier-list
+	| type-qualifier specifier-qualifier-list
+	;
+
+type-specifier
+	: VOID
+	| CHAR
+	| SHORT
+	| INT
+	| LONG
+	| FLOAT
+	| DOUBLE
+	| SIGNED
+	| UNSIGNED
+	| struct-or-union-specifier
+	| enum-specifier
+	| typedef-name
+	;
+
+typedef-name
+	: IDENTIFIER
+	;
+
+struct-or-union-specifier
+	: struct-or-union LBRACE struct-declaration-list RBRACE
+	| struct-or-union IDENTIFIER
+	| struct-or-union IDENTIFIER LBRACE struct-declaration-list RBRACE
+	;
+
+struct-or-union
+	: STRUCT
+	| UNION
+	;
+
+struct-declaration-list	
+	: struct-declaration
+	| struct-declaration-list struct-declaration
+	;
+
+struct-declaration
+	: specifier-qualifier-list struct-declarator-list SEMICOLON
+	;
+
+struct-declarator-list
+	: struct-declarator
+	| struct-declarator-list COMMA struct-declarator
+	;
+
+struct-declarator
+	: declarator
+	| COLON constant-expression
+	| declarator COLON constant-expression
+	;
+
+declarator
+	: pointer direct-declarator
+	| direct-declarator
+	;
+
+direct-declarator
+	: IDENTIFIER
+	| LPAREN declarator RPAREN
+	| direct-declarator LBRACKET RBRACKET
+	| direct-declarator LBRACKET constant-expression RBRACKET
+	| direct-declarator LPAREN parameter-type-list RPAREN
+	| direct-declarator LPAREN RPAREN
+	| direct-declarator LPAREN identifier-list RPAREN
+	;
+
+identifier-list
+	: IDENTIFIER
+	| identifier-list COMMA IDENTIFIER
+	;
