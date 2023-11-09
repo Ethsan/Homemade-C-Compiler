@@ -181,9 +181,9 @@ type-qualifier
 direct-abstract-declarator
 	: LPAREN abstract-declarator RPAREN
 	| LBRACKET RBRACKET
-	| LBRACKET conditional-expression RBRACKET
+	| LBRACKET constant-expression RBRACKET
 	| direct-abstract-declarator LBRACKET RBRACKET
-	| direct-abstract-declarator LBRACKET conditional-expression RBRACKET
+	| direct-abstract-declarator LBRACKET constant-expression RBRACKET
 	| LPAREN RPAREN
 	| LPAREN parameter-type-list RPAREN
 	| direct-abstract-declarator LPAREN RPAREN
@@ -319,9 +319,13 @@ identifier-list
 	| identifier-list COMMA IDENTIFIER
 	;
 initializer
-	: assignment-expression
+	: assignement-expression
 	| LBRACE initializer-list RBRACE
 	| LBRACE initializer-list COMMA RBRACE
+	;
+
+constant-expression
+	: conditional-expression
 	;
 
 enum-specifier
@@ -348,10 +352,6 @@ labeled-statement
 	: IDENTIFIER COLON statement
 	| CASE constant-expression COLON statement
 	| DEFAULT COLON statement
-	;
-
-constant-expression
-	: conditional-expression
 	;
 
 compound-statement
@@ -401,3 +401,34 @@ function-definition
 	| compound-statement
 	| declaration-list compound-statement
 	;
+
+enumerator-list
+	: enumerator
+	| enumerator-list COMMA enumerator
+	;
+
+enumerator
+	: IDENTIFIER
+	| IDENTIFIER EQUAL constant-expression
+	;
+
+initializer-list
+	: initializer
+	| initializer-list COMMA initializer
+	;
+postfix-expression
+	: primary-expression
+	| postfix-expression LBRACKET expression RBRACKET
+	| postfix-expression LPAREN RPAREN
+	| postfix-expression LPAREN argument-expression-list RPAREN
+	| postfix-expression DOT IDENTIFIER
+	| postfix-expression ARROW IDENTIFIER
+	| postfix-expression INCREMENT
+	| postfix-expression DECREMENT
+	;
+
+argument-expression-list
+	: assignement-expression
+	| argument-expression-list COMMA assignement-expression
+	;
+%%
