@@ -57,3 +57,7 @@ dkms.conf
 # Bison
 *.tab.h
 *.tab.c
+*.output
+
+# Executable
+main

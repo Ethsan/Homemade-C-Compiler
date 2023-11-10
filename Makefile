@@ -5,16 +5,16 @@ LDLIBS = -lfl
 YACC = bison -v -d
 LEX = flex
 
-OBJS = cmat.o parser.o lexer.o
+OBJS = main.o parser.tab.o lex.yy.o
 
-cmat: $(OBJS)
+main: $(OBJS)
 
-parser.c parser.h: parser.y
+parser.tab.c parser.tab.h: parser.y
 	$(YACC) parser.y
 
-lexer.c: lexer.l parser.h
-	$(LEX) -o lexer.c lexer.l
+lex.yy.c: lexer.l parser.tab.h
+	$(LEX) lexer.l
 
 .PHONY: clean
 clean:
-	rm -f cmat *.o *.output *.tab.*
+	rm -f main *.o *.output *.tab.*

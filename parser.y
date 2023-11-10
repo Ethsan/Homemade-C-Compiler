@@ -1,6 +1,14 @@
 %{
-void yyerror (const char * msg);
+#include <stdio.h>
+
+void yyerror(const char * msg);
+
+extern int yylex(void);
 %}
+
+%locations
+
+%define parse.error verbose
 
 %token AUTO DOUBLE INT STRUCT BREAK ELSE 
 %token LONG SWITCH CASE ENUM REGISTER TYPEDEF CHAR
@@ -20,6 +28,7 @@ void yyerror (const char * msg);
 %token PLUS_PLUS MINUS_MINUS COLON QUESTION OR_OR AND_AND
 %token OR XOR ELLIPSIS SEMICOLON
 
+%token HASH HASH_HASH
 %token TYPEDEF_NAME
 
 %right THEN ELSE
@@ -439,3 +448,7 @@ argument-expression-list
 	;
 
 %%
+
+void yyerror(const char * msg) {
+	fprintf(stderr, "Error: %s\n", msg);
+}

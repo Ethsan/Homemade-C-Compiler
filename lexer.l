@@ -8,14 +8,15 @@ int column = 1;
 	yylloc.first_line = lineno; \
 	yylloc.last_line = lineno; \
 	 \
-	yyloc.first_column = column; \
+	yylloc.first_column = column; \
 	column += yyleng; \
-	yyloc.last_column = column; \
+	yylloc.last_column = column; \
 } while (0);
 %}
 
 %option noinput
 %option noyywrap
+%option nounput
 
 SIGN [+-]
 
@@ -83,46 +84,6 @@ if		{ return IF; }
 static		{ return STATIC; }
 while		{ return WHILE; }
 
-	/* Identifiers */
-{IDENTIFIER} {
-	return IDENTIFIER;
-}
-
-	/* Integer constants */
-{INTEGER_CONSTANT}{SUFFIX}? {
-	return INTEGER_CONSTANT;
-}
-
-	/* Floating constants */
-({FLOATING_CONSTANT}{SUFFIX}? {
-	return FLOATING_CONSTANT;
-}
-
-	/* Character constants */
-\'{C_CHAR_SEQUENCE}\' {
-	yylloc.first_column += 1;
-	yylloc.last_column -= 1;
-	return CHARACTER_CONSTANT
-}
-
-L\'{C_CHAR_SEQUENCE}\' {
-	yylloc.first_column += 2;
-	yylloc.last_column -= 1;
-	return CHARACTER_CONSTANT;
-}
-
-	/* String literals */
-\"{S_CHAR_SEQUENCE}\" {
-	yylloc.first_column += 1;
-	yylloc.last_column -= 1;
-	return STRING_LITERAL;
-}
-
-L\"{S_CHAR_SEQUENCE}\" {
-	yylloc.first_column += 2;
-	yylloc.last_column -= 1;
-	return STRING_LITERAL;
-}
 	/* Operators */
 \.	{ return DOT; }
 \-\>	{ return ARROW; }
@@ -134,7 +95,6 @@ L\"{S_CHAR_SEQUENCE}\" {
 \-	{ return MINUS; }
 \~	{ return TILDE; }
 \!	{ return EXCLAMATION; }
-sizeof	{ return SIZEOF; }
 \/	{ return SLASH; }
 \%	{ return PERCENT; }
 
@@ -157,16 +117,16 @@ sizeof	{ return SIZEOF; }
 \#\#	{ return HASH_HASH; }
 
 =	{ return EQUAL; }
-*=	{ return STAR_EQUAL; }
+\*=	{ return STAR_EQUAL; }
 \/=	{ return SLASH_EQUAL; }
 %=	{ return PERCENT_EQUAL; }
 \+=	{ return PLUS_EQUAL; }
 -=	{ return MINUS_EQUAL; }
-<<=	{ return LSHIFT_EQUAL; }
+\<\<=	{ return LSHIFT_EQUAL; }
 >>=	{ return RSHIFT_EQUAL; }
 &=	{ return AND_EQUAL; }
-^=	{ return XOR_EQUAL; }
-|=	{ return OR_EQUAL; }
+\^=	{ return XOR_EQUAL; }
+\|=	{ return OR_EQUAL; }
 
 	/* Punctuators */
 \[	{ return LBRACKET; }
@@ -179,11 +139,50 @@ sizeof	{ return SIZEOF; }
 \,	{ return COMMA; }
 \.\.\.	{ return ELLIPSIS; }
 
+	/* Identifiers */
+{IDENTIFIER} {
+	return IDENTIFIER;
+}
+
+	/* Integer constants */
+{INTEGER_CONSTANT}{SUFFIX}? {
+	return INTEGER_CONSTANT;
+}
+
+	/* Floating constants */
+{FLOATING_CONSTANT}{SUFFIX}? {
+	return FLOATING_CONSTANT;
+}
+
+	/* Character constants */
+\'{C_CHAR_SEQUENCE}\' {
+	yylloc.first_column += 1;
+	yylloc.last_column -= 1;
+	return CHARACTER_CONSTANT;
+}
+
+L\'{C_CHAR_SEQUENCE}\' {
+	yylloc.first_column += 2;
+	yylloc.last_column -= 1;
+	return CHARACTER_CONSTANT;
+}
+
+	/* String literals */
+\"{S_CHAR_SEQUENCE}\" {
+	yylloc.first_column += 1;
+	yylloc.last_column -= 1;
+	return STRING_LITERAL;
+}
+
+L\"{S_CHAR_SEQUENCE}\" {
+	yylloc.first_column += 2;
+	yylloc.last_column -= 1;
+	return STRING_LITERAL;
+}
 	/* Newlines */
 \n {
 	lineno++;
 	column = 1;
-	return NEWLINE;
 }
 
 	/* Whitespace */
