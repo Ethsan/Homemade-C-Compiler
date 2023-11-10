@@ -1,31 +1,34 @@
-
+%{
 void yyerror (const char * msg);
+%}
 
-%token 	AUTO DOUBLE INT STRUCT BREAK ELSE \ 
-	LONG SWITCH CASE ENUM REGISTER TYPEDEF CHAR \
-	EXTERN RETURN UNION CONST FLOAT SHORT UNSIGNED \
-	CONTINUE FOR SIGNED VOID DEFAULT GOTO SIZEOF \
-	VOLATILE DO IF STATIC WHILE \
-	IDENTIFIER INTEGER_CONSTANT FLOATING_CONSTANT \
-	ENUMERATION_CONSTANT CHARACTER_CONSTANT STRING_LITERAL \
-	LBRACKET RBRACKET LPAREN RPAREN LBRACE RBRACE \ 
-	COMMA 	DOT ARROW INCREMENT DECREMENT AND STAR \
-	PLUS MINUS TILDE EXCLAMATION SLASH PERCENT \
-	LSHIFT RSHIFT LESS_THAN GREATER_THAN \
-	LESS_THAN_EQUAL GREATER_THAN_EQUAL EQUAL \ 
-	NOT_EQUAL EQUAL_EQUAL STAR_EQUAL SLASH_EQUAL \
-	PERCENT_EQUAL PLUS_EQUAL MINUS_EQUAL LSHIFT_EQUAL \
-	RSHIFT_EQUAL AND_EQUAL XOR_EQUAL OR_EQUAL \
-	PLUS_PLUS MINUS_MINUS COLON QUESTION OR_OR AND_AND \
-	OR XOR ELLIPSIS SEMICOLON
+%token AUTO DOUBLE INT STRUCT BREAK ELSE 
+%token LONG SWITCH CASE ENUM REGISTER TYPEDEF CHAR
+%token EXTERN RETURN UNION CONST FLOAT SHORT UNSIGNED
+%token CONTINUE FOR SIGNED VOID DEFAULT GOTO SIZEOF
+%token VOLATILE DO IF STATIC WHILE
+%token IDENTIFIER INTEGER_CONSTANT FLOATING_CONSTANT
+%token ENUMERATION_CONSTANT CHARACTER_CONSTANT STRING_LITERAL
+%token LBRACKET RBRACKET LPAREN RPAREN LBRACE RBRACE 
+%token COMMA 	DOT ARROW INCREMENT DECREMENT AND STAR
+%token PLUS MINUS TILDE EXCLAMATION SLASH PERCENT
+%token LSHIFT RSHIFT LESS_THAN GREATER_THAN
+%token LESS_THAN_EQUAL GREATER_THAN_EQUAL EQUAL 
+%token NOT_EQUAL EQUAL_EQUAL STAR_EQUAL SLASH_EQUAL
+%token PERCENT_EQUAL PLUS_EQUAL MINUS_EQUAL LSHIFT_EQUAL
+%token RSHIFT_EQUAL AND_EQUAL XOR_EQUAL OR_EQUAL
+%token PLUS_PLUS MINUS_MINUS COLON QUESTION OR_OR AND_AND
+%token OR XOR ELLIPSIS SEMICOLON
 
+%token TYPEDEF_NAME
+
+%right THEN ELSE
 
 %start program
 
 %%
-
 program
-	: /* empty */
+	: translation-unit
 	;
 
 primary-expression
@@ -266,8 +269,9 @@ type-specifier
 	;
 
 typedef-name
-	: IDENTIFIER
+	: TYPEDEF_NAME
 	;
+
 struct-or-union-specifier
 	: struct-or-union LBRACE struct-declaration-list RBRACE
 	| struct-or-union IDENTIFIER
@@ -318,6 +322,7 @@ identifier-list
 	: IDENTIFIER
 	| identifier-list COMMA IDENTIFIER
 	;
+
 initializer
 	: assignement-expression
 	| LBRACE initializer-list RBRACE
@@ -367,7 +372,7 @@ expression-statement
 	;
 
 selection-statement
-	: IF LPAREN expression RPAREN statement
+	: IF LPAREN expression RPAREN statement %prec THEN
 	| IF LPAREN expression RPAREN statement ELSE statement
 	| SWITCH LPAREN expression RPAREN statement
 	;
@@ -397,9 +402,10 @@ external-declaration
 	;
 
 function-definition
-	: declaration-specifiers declarator
-	| compound-statement
-	| declaration-list compound-statement
+	: declaration-specifiers declarator declaration-list compound-statement
+	| declaration-specifiers declarator compound-statement
+	| declarator declaration-list compound-statement
+	| declarator compound-statement
 	;
 
 enumerator-list
@@ -431,4 +437,5 @@ argument-expression-list
 	: assignement-expression
 	| argument-expression-list COMMA assignement-expression
 	;
+
 %%
