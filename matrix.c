@@ -1,9 +1,5 @@
 
-typedef struct matrix {
-	int rows;
-	int cols;
-	float *data;
-} matrix;
+#include "matrix.h"
 
 matrix make_matrix(int rows, int cols)
 {
@@ -11,6 +7,7 @@ matrix make_matrix(int rows, int cols)
 	m.rows = rows;
 	m.cols = cols;
 	m.data = 0;
+	return m;
 }
 
 matrix mat_transpose(matrix m)
