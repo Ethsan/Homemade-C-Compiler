@@ -32,4 +32,3 @@ matrix mat_oppose(matrix m);
 
 matrix mat_extract(matrix m, int row_start, int row_end, int col_start,
 		   int col_end);
-                   
