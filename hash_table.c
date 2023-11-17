@@ -1,19 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
 #include "hash_table.h"
-
-
-typedef struct identifier_t {
-	char id[MAX_IDENTIFIER_SIZE];
-	void *binding;
-	struct identifier_t *next;
-} identifier_t;
-
-typedef struct symbol_table {
-	identifier_t *table[TABLE_SIZE];
-	int nb_identifiers;
-} symbol_table;
 
 symbol_table create_table(void)
 {
@@ -21,22 +10,44 @@ symbol_table create_table(void)
 	table.nb_identifiers = 0;
 	return table;
 }
+
+void test_malloc(void *ptr)
+{
+	if (ptr == NULL) {
+		fprintf(stderr, "Erreur d'allocation mémoire\n");
+		exit(1);
+	}
+}
+
 int hash(char *id, int b, int mod)
 {
 	int hash = 0;
 	for (int i = 0; i < (int)strlen(id); i++) {
-		hash = hash*b + id[i];
+		hash = hash * b + id[i];
 		hash = hash % mod;
 	}
 	return hash;
 }
 
-void add_identifier(symbol_table *table, char *id)
+void display_table(symbol_table *table)
+{
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		identifier_t *current = table->table[i];
+		while (current != NULL) {
+			printf("%s\n", current->id);
+			current = current->next;
+		}
+	}
+}
+
+int add_identifier(symbol_table *table, char *id)
 {
 	int hash_value = hash(id, PRIME, TABLE_SIZE);
 	identifier_t *identifier = malloc(sizeof(identifier_t));
+	test_malloc(identifier);
 	strcpy(identifier->id, id);
 	identifier->next = NULL;
+	identifier->number = table->nb_identifiers + 1;
 	if (table->table[hash_value] == NULL) {
 		table->table[hash_value] = identifier;
 	} else {
@@ -47,4 +58,48 @@ void add_identifier(symbol_table *table, char *id)
 		current->next = identifier;
 	}
 	table->nb_identifiers++;
+	return identifier->number;
+}
+
+// peut être pas besoin de cette fonction
+void table_init(symbol_table *table, char **keywords, int nb_keywords)
+{
+	for (int i = 0; i < nb_keywords; i++) {
+		add_identifier(table, keywords[i]);
+	}
+}
+
+int is_in_table(symbol_table *table, char *id)
+{
+	int hash_value = hash(id, PRIME, TABLE_SIZE);
+	identifier_t *current = table->table[hash_value];
+	while (current != NULL) {
+		if (strcmp(current->id, id) == 0) {
+			return current->number;
+		}
+		current = current->next;
+	}
+	return 0;
+}
+
+int get_identifier_number(symbol_table *table, char *id)
+{
+	int n = 0;
+	if ((n = is_in_table(table, id) == 0)) {
+		return add_identifier(table, id);
+	} else {
+		return n;
+	}
+}
+
+void free_table(symbol_table *table)
+{
+        for (int i = 0; i < TABLE_SIZE; i++) {
+                identifier_t *current = table->table[i];
+                while (current != NULL) {
+                        identifier_t *tmp = current;
+                        current = current->next;
+                        free(tmp);
+                }
+        }
 }
