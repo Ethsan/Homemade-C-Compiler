@@ -15,6 +15,13 @@ parser.tab.c parser.tab.h: parser.y
 lex.yy.c: lexer.l parser.tab.h
 	$(LEX) lexer.l
 
+test_%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@ -DTEST_%
+
+test_%: test_%.o $(filter-out main.o, $(OBJS))
+	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS)
+	./$@
+
 .PHONY: clean
 clean:
 	rm -f main *.o *.output *.tab.*
