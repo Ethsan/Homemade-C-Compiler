@@ -34,7 +34,7 @@ void display_table(symbol_table *table)
 	for (int i = 0; i < TABLE_SIZE; i++) {
 		identifier_t *current = table->table[i];
 		while (current != NULL) {
-			printf("%s\n", current->id);
+			printf("%s\n", current->name);
 			current = current->next;
 		}
 	}
@@ -45,7 +45,7 @@ int add_identifier(symbol_table *table, char *id)
 	int hash_value = hash(id, PRIME, TABLE_SIZE);
 	identifier_t *identifier = malloc(sizeof(identifier_t));
 	test_malloc(identifier);
-	strcpy(identifier->id, id);
+	strcpy(identifier->name, id);
 	identifier->next = NULL;
 	identifier->number = table->nb_identifiers + 1;
 	if (table->table[hash_value] == NULL) {
@@ -61,20 +61,12 @@ int add_identifier(symbol_table *table, char *id)
 	return identifier->number;
 }
 
-// peut être pas besoin de cette fonction
-void table_init(symbol_table *table, char **keywords, int nb_keywords)
-{
-	for (int i = 0; i < nb_keywords; i++) {
-		add_identifier(table, keywords[i]);
-	}
-}
-
 int is_in_table(symbol_table *table, char *id)
 {
 	int hash_value = hash(id, PRIME, TABLE_SIZE);
 	identifier_t *current = table->table[hash_value];
 	while (current != NULL) {
-		if (strcmp(current->id, id) == 0) {
+		if (strcmp(current->name, id) == 0) {
 			return current->number;
 		}
 		current = current->next;

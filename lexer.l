@@ -1,5 +1,6 @@
 %{
 #include "parser.tab.h"
+#include "hash_table.h"
 
 int lineno = 1;
 int column = 1;
@@ -141,6 +142,10 @@ while		{ return WHILE; }
 
 	/* Identifiers */
 {IDENTIFIER} {
+	if(strlen(yytext) > MAX_IDENTIFIER_LENGTH) {
+		fprintf(stderr, "Identifier too long: %s\n", yytext);
+		// il ne faudra pas oublier de faire les zigouigouis 
+	}
 	return IDENTIFIER;
 }
 

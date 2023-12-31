@@ -1,24 +1,26 @@
-// norme du c 63 significant initial characters in an internal identifier, 31 significant initial characters in an external identifier
-// on choisit 64 pour tout
 #define MAX_IDENTIFIER_SIZE 64
 
 #define PRIME 613
 #define TABLE_SIZE 1009
 
-enum id_predefined {
-	main,
-	// à discuter à propos de ça
-};
-
 typedef struct identifier_t {
-	char id[MAX_IDENTIFIER_SIZE];
+	char name[MAX_IDENTIFIER_SIZE];
 	int number;
+	int type;
+	// for functions
+	int nb_params;
+	// for tables
+	int nb_dimensions;
+	int *dimensions;
+
+	int mem_size;
 	struct identifier_t *next;
 } identifier_t;
 
 typedef struct symbol_table {
 	identifier_t *table[TABLE_SIZE];
 	int nb_identifiers;
+	int block_number;
 } symbol_table;
 
 symbol_table create_symbol_table(void);
