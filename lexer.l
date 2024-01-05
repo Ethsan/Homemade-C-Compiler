@@ -1,4 +1,5 @@
 %{
+#include "tree.h"
 #include "parser.tab.h"
 #include "hash_table.h"
 
@@ -142,20 +143,24 @@ while		{ return WHILE; }
 
 	/* Identifiers */
 {IDENTIFIER} {
-	if(strlen(yytext) > MAX_IDENTIFIER_LENGTH) {
+	if(yyleng > MAX_IDENTIFIER_LENGTH) {
 		fprintf(stderr, "Identifier too long: %s\n", yytext);
 		// il ne faudra pas oublier de faire les zigouigouis 
 	}
+	yylval = get_identifier(yytext, yyleng);
+	// TODO check if typedef
 	return IDENTIFIER;
 }
 
 	/* Integer constants */
 {INTEGER_CONSTANT}{SUFFIX}? {
+	yylval = get_integer_constant(yytext, yyleng);
 	return INTEGER_CONSTANT;
 }
 
 	/* Floating constants */
 {FLOATING_CONSTANT}{SUFFIX}? {
+	yylval = get_real_constant(yytext, yyleng);
 	return FLOATING_CONSTANT;
 }
 
@@ -163,12 +168,14 @@ while		{ return WHILE; }
 \'{C_CHAR_SEQUENCE}\' {
 	yylloc.first_column += 1;
 	yylloc.last_column -= 1;
+	yylval = get_char_constant(yytext + 1, yyleng - 2);
 	return CHARACTER_CONSTANT;
 }
 
 L\'{C_CHAR_SEQUENCE}\' {
 	yylloc.first_column += 2;
 	yylloc.last_column -= 1;
+	yylval = get_char_constant(yytext + 2, yyleng - 3);
 	return CHARACTER_CONSTANT;
 }
 
@@ -176,12 +183,14 @@ L\'{C_CHAR_SEQUENCE}\' {
 \"{S_CHAR_SEQUENCE}\" {
 	yylloc.first_column += 1;
 	yylloc.last_column -= 1;
+	yylval = get_string_literal(yytext + 1, yyleng - 2);
 	return STRING_LITERAL;
 }
 
 L\"{S_CHAR_SEQUENCE}\" {
 	yylloc.first_column += 2;
 	yylloc.last_column -= 1;
+	yylval = get_string_literal(yytext + 2, yyleng - 3);
 	return STRING_LITERAL;
 }
 	/* Newlines */
