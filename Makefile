@@ -5,7 +5,7 @@ LDLIBS = -lfl
 YACC = bison -v -d
 LEX = flex
 
-OBJS = main.o parser.tab.o lex.yy.o
+OBJS = main.o parser.tab.o lex.yy.o tree.o
 
 main: $(OBJS)
 

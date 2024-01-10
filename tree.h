@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#define MAX_IDENTIFIER_LEN 256
+
 typedef union tree_node *tree;
 
 enum tree_code {
@@ -69,7 +71,7 @@ enum tree_code {
 	INDIRECT_REF,
 	/* Operand 0: variable to reference
 	 * Operand 1: component to reference */
-	COMPONENT_REF,
+	MEMBER_REF,
 
 	/* Expressions */
 
@@ -341,6 +343,10 @@ tree build_unary_expr(enum tree_code code, tree node);
 
 tree build_expr(enum tree_code code, tree lhs, tree rhs);
 
+tree build_cast(tree expr, tree type);
+
+tree build_sizeof(tree type);
+
 tree build_cond_expr(tree cond, tree yes, tree no);
 
 tree build_if(tree cond, tree yes, tree no);
@@ -363,11 +369,11 @@ tree build_continue(void);
 
 tree build_return(tree value);
 
-tree build_label(tree label);
+tree build_label(tree label, tree stmt);
 
-tree build_case(tree expr);
+tree build_case(tree expr, tree stmt);
 
-tree build_default(void);
+tree build_default(tree stmt);
 
 tree build_goto(tree label);
 

@@ -1,9 +1,16 @@
 %{
+#include "tree.h"
+
 #include <stdio.h>
 
 void yyerror(const char * msg);
 
 extern int yylex(void);
+
+#define ERROR(msg) do { \
+	yyerror(msg); \
+	YYERROR; \
+} while (0)
 %}
 
 %locations
@@ -13,6 +20,7 @@ extern int yylex(void);
 %union {
 	tree tree;
 	enum tree_code code;
+	int misc;
 }
 
 %token <tree> IDENTIFIER
@@ -61,7 +69,7 @@ extern int yylex(void);
 %type <tree> declaration_specifiers
 %type <tree> init_declarator_list
 %type <tree> init_declarator
-%type <tree> storage_class_specifier
+%type <misc> storage_class_specifier
 %type <tree> type_specifier
 %type <tree> struct_or_union_specifier
 %type <tree> struct_or_union
@@ -129,25 +137,25 @@ primary_expression
 postfix_expression
 	: primary_expression
 	| postfix_expression LBRACKET expression RBRACKET {
-		$$ = build_unary_expr(DEREF_EXPRE, build_expr(ADD_EXPR, $1, $3));
+		$$ = build_unary_expr(INDIRECT_REF, build_expr(ADD_EXPR, $1, $3));
 	}
 	| postfix_expression LPAREN RPAREN {
-		$$ = build_call($1, NULL);
+		$$ = build_expr(CALL_EXPR, $1, NULL);
 	}
 	| postfix_expression LPAREN argument_expression_list RPAREN {
-		$$ = build_call($1, $3);
+		$$ = build_expr(CALL_EXPR, $1, $3);
 	}
 	| postfix_expression DOT IDENTIFIER {
-		$$ = build_member_ref($1, $3);
+		$$ = build_expr(MEMBER_REF, $1, $3);
 	}
 	| postfix_expression ARROW IDENTIFIER {
-		$$ = build_deref(build_member_ref($1, $3));
+		$$ = build_expr(MEMBER_REF, build_unary_expr(INDIRECT_REF, $1), $3);
 	}
 	| postfix_expression INCREMENT {
-		$$ = build_incr_expr(POST_INCR_EXPR, $1);
+		$$ = build_unary_expr(POST_INCR_EXPR, $1);
 	}
 	| postfix_expression DECREMENT {
-		$$ = build_incr_expr(POST_DECR_EXPR, $1);
+		$$ = build_unary_expr(POST_DECR_EXPR, $1);
 	}
 	;
 
@@ -156,16 +164,16 @@ postfix_expression
 unary_expression
 	: postfix_expression
 	| PLUS_PLUS unary_expression {
-		$$ = build_incr_expr(PRE_INCR_EXPR, $2);
+		$$ = build_unary_expr(PRE_INCR_EXPR, $2);
 	}
 	| MINUS_MINUS unary_expression {
-		$$ = build_incr_expr(PRE_DECR_EXPR, $2);
+		$$ = build_unary_expr(PRE_DECR_EXPR, $2);
 	}
 	| unary_operator cast_expression {
 		$$ = build_unary_expr($1, $2);
 	}
 	| SIZEOF unary_expression {
-		$$ = build_sizeof($2);
+		$$ = build_sizeof(TREE_TYPE($2));
 	}
 	| SIZEOF LPAREN type_name RPAREN {
 		$$ = build_sizeof($3);
@@ -353,7 +361,7 @@ expression
 constant_expression
 	: conditional_expression {
 		if (!is_constant($1)) {
-			YYERROR("constant_expression must be constant");
+			ERROR("constant_expression must be constant");
 		}
 		$$ = $1;
 	}
@@ -367,8 +375,8 @@ declaration
 	}
 	| declaration_specifiers init_declarator_list SEMICOLON {
 		for (tree t = $2; t != NULL; ) {
-			type_append(TREE_VALUE(t), $1);
-			emit_decl(TREE_VALUE(t));
+			type_append(TREE_TYPE(t), $1);
+			emit_decl(TREE_TYPE(t));
 
 			tree next = TREE_CHAIN(t);
 			free(t);
@@ -379,29 +387,20 @@ declaration
 
 declaration_specifiers
 	: storage_class_specifier {
-		YYERROR("storage_class_specifier not implemented");
+		ERROR("storage_class_specifier not implemented");
 	}
 	| storage_class_specifier declaration_specifiers {
-		YYERROR("storage_class_specifier not implemented");
+		ERROR("storage_class_specifier not implemented");
 	}
 	| type_specifier { $$ = $1; }
 	| type_specifier declaration_specifiers {
-		if (is_qualifier($2)) {
-			TYPE_QUALS($1) = $2;
-			$$ = $1;
-		} else {
-			YYERROR("multiple type specifiers");
-		}
+		ERROR("multiple type specifiers");
 	}
 	| type_qualifier {
-		$$ = $1;
+		ERROR("type_qualifier not implemented");
 	}
 	| type_qualifier declaration_specifiers {
-		if (is_qualifier($2)) {
-			$$ = chain_append($2, $1);
-		} else {
-			$$ = type_qual_append($2, $1);
-		}
+		ERROR("multiple type qualifiers");
 	}
 	;
 	
@@ -421,7 +420,7 @@ init_declarator
 	}
 	| declarator EQUAL initializer {
 		$$ = $1;
-		decl_set_init($$, $3);
+		DECL_BODY($$) = $3;
 	}
 	;
 
@@ -440,13 +439,13 @@ storage_class_specifier
 type_specifier
 	: VOID { $$ = new_node(VOID_TYPE, NULL); }
 	| CHAR { $$ = new_node(CHAR_TYPE, NULL); }
-	| SHORT { YYERROR("SHORT not implemented"); }
+	| SHORT { ERROR("SHORT not implemented"); }
 	| INT { $$ = new_node(INT_TYPE, NULL); }
-	| LONG { YYERROR("LONG not implemented"); }
-	| FLOAT { $$ = new_node(FLOAT_TYPE, NULL); }
-	| DOUBLE { $$ = new_node(FLOAT_TYPE, NULL); }
-	| SIGNED { YYERROR("SIGNED not implemented"); }
-	| UNSIGNED { YYERROR("UNSIGNED not implemented"); }
+	| LONG { ERROR("LONG not implemented"); }
+	| FLOAT { $$ = new_node(REAL_TYPE, NULL); }
+	| DOUBLE { $$ = new_node(REAL_TYPE, NULL); }
+	| SIGNED { ERROR("SIGNED not implemented"); }
+	| UNSIGNED { ERROR("UNSIGNED not implemented"); }
 	| struct_or_union_specifier { $$ = $1; }
 	| enum_specifier { $$ = $1; }
 	| TYPE_NAME { $$ = $1; }
@@ -506,8 +505,8 @@ enumerator
 /*	3.3. Type qualifiers */
 
 type_qualifier
-	: CONST { $$ = new_node(CONST_QUAL, NULL); }
-	| VOLATILE { $$ = new_node(VOLATILE_QUAL, NULL); }
+	: CONST { $$ = NULL; }
+	| VOLATILE { $$ = NULL; }
 	;
 
 /*	3.4. Declarators */
@@ -563,7 +562,7 @@ direct_declarator
 	}
 			
 	| direct_declarator LPAREN identifier_list RPAREN {
-		YYERROR("identifier_list not implemented");
+		ERROR("identifier_list not implemented");
 	}
 	;
 
@@ -575,12 +574,10 @@ pointer
 		$$ = new_node(PTR_TYPE, $2);
 	}
 	| STAR type_qualifier_list {
-		$$ = new_node(PTR_TYPE, NULL);
-		TYPE_QUALS($$) = $2;
+		ERROR("type_qualifier_list not implemented");
 	}
 	| STAR type_qualifier_list pointer {
-		$$ = new_node(PTR_TYPE, $3);
-		TYPE_QUALS($$) = $2;
+		ERROR("type_qualifier_list not implemented");
 	}
 	;
 	 
@@ -599,7 +596,7 @@ parameter_type_list
 		$$ = $1;
 	}
 	| parameter_list COMMA ELLIPSIS {
-		YYERROR("ELLIPSIS not implemented");
+		ERROR("ELLIPSIS not implemented");
 	}
 	;
 
@@ -616,7 +613,7 @@ parameter_declaration
 	: declaration_specifiers declarator {
 		TREE_TYPE($2) = type_append(TREE_TYPE($2), $1);
 		TREE_CODE($2) = PARM_DECL;
-		$$ = $1
+		$$ = $1;
 	}	
 	| declaration_specifiers abstract_declarator {
 		$2 = type_append($2, $1);
@@ -697,23 +694,17 @@ constant
 	;
 
 specifier_qualifier_list
-	: type_specifier 
-	| type_qualifier
+	: type_specifier {
+		$$ = $1;
+	}
+	| type_qualifier {
+		ERROR("type_qualifier not implemented");
+	}
 	| type_specifier specifier_qualifier_list {
-		if (is_qualifier($2)) {
-			TYPE_QUALS($1) = $2;
-			$$ = $1;
-		} else {
-			YYERROR("multiple type specifiers");
-		}
+		ERROR("multiple type specifiers");
 	}
 	| type_qualifier specifier_qualifier_list {
-		if (is_qualifier($2)) {
-			chain_append($2, $1);
-		} else {
-			type_qual_append($2, $1);
-		}
-		$$ = $2;
+		ERROR("multiple type qualifiers");
 	}
 	;
 
@@ -840,7 +831,7 @@ selection_statement
 		$$ = build_if($3, $5, $7);
 	}
 	| SWITCH LPAREN expression RPAREN statement {
-		YYERROR("SWITCH not implemented");
+		ERROR("SWITCH not implemented");
 	}
 	;
 
@@ -900,7 +891,7 @@ external_declaration
 
 function_definition
 	: declaration_specifiers declarator declaration_list compound_statement {
-		YYERROR("declaration_list not implemented");
+		ERROR("declaration_list not implemented");
 	}
 	| declaration_specifiers declarator {
 		$<tree>$ = new_node(FUNCTION_DECL, $2);
@@ -910,7 +901,7 @@ function_definition
 		end_function($4);
 	}
 	| declarator declaration_list compound_statement {
-		YYERROR("declaration_list not implemented");
+		ERROR("declaration_list not implemented");
 	}
 	| declarator {
 		type_append($1, new_node(INT_TYPE, NULL));

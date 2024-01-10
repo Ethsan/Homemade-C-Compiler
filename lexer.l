@@ -1,7 +1,9 @@
 %{
 #include "tree.h"
 #include "parser.tab.h"
-#include "hash_table.h"
+
+#define HASH 0
+#define HASH_HASH 0
 
 int lineno = 1;
 int column = 1;
@@ -143,46 +145,46 @@ while		{ return WHILE; }
 
 	/* Identifiers */
 {IDENTIFIER} {
-	if(yyleng > MAX_IDENTIFIER_LENGTH) {
+	if(yyleng > MAX_IDENTIFIER_LEN) {
 		fprintf(stderr, "Identifier too long: %s\n", yytext);
 		// il ne faudra pas oublier de faire les zigouigouis 
 	}
-	yylval = get_identifier(yytext, yyleng);
+	yylval.tree = get_identifier(yytext, yyleng);
 	// TODO check if typedef
 	return IDENTIFIER;
 }
 
 	/* Integer constants */
 {INTEGER_CONSTANT}{SUFFIX}? {
-	yylval = parse_integer(yytext, yyleng);
+	yylval.tree = parse_integer(yytext, yyleng);
 	return INTEGER_CONSTANT;
 }
 
 	/* Floating constants */
 {FLOATING_CONSTANT}{SUFFIX}? {
-	yylval = parse_real(yytext, yyleng);
+	yylval.tree = parse_real(yytext, yyleng);
 	return FLOATING_CONSTANT;
 }
 
 	/* Character constants */
 \'{C_CHAR_SEQUENCE}\' {
-	yylval = parse_char(yytext, yyleng);
+	yylval.tree = parse_char(yytext, yyleng);
 	return CHARACTER_CONSTANT;
 }
 
 L\'{C_CHAR_SEQUENCE}\' {
-	yylval = parse_char(yytext, yyleng);
+	yylval.tree = parse_char(yytext, yyleng);
 	return CHARACTER_CONSTANT;
 }
 
 	/* String literals */
 \"{S_CHAR_SEQUENCE}\" {
-	yylval = parse_string(yytext, yyleng);
+	yylval.tree = parse_string(yytext, yyleng);
 	return STRING_LITERAL;
 }
 
 L\"{S_CHAR_SEQUENCE}\" {
-	yylval = parse_string(yytext, yyleng);
+	yylval.tree = parse_string(yytext, yyleng);
 	return STRING_LITERAL;
 }
 	/* Newlines */

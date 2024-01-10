@@ -444,9 +444,6 @@ int is_compatible(tree type1, tree type2)
 	if (type1 == NULL || type2 == NULL)
 		return 0;
 
-	enum tree_code code1 = TREE_CODE(type1);
-	enum tree_code code2 = TREE_CODE(type2);
-
 	if (is_integer(type1) && is_integer(type2))
 		return 1;
 	if (is_real(type1) && is_real(type2))
@@ -481,6 +478,11 @@ int is_compatible(tree type1, tree type2)
 	}
 
 	return 0;
+}
+
+int is_constant(tree node)
+{
+	return TREE_IS_CONSTANT(node);
 }
 
 static char *sanitize(const char *str, int len)
@@ -695,16 +697,20 @@ tree build_unary_expr(enum tree_code code, tree expr)
 	switch (code) {
 	case ADDR_EXPR:
 		node = new_node(ADDR_EXPR, new_node(PTR_TYPE, TREE_TYPE(expr)));
+		break;
 	case INDIRECT_REF:
 		return build_deref(expr);
 	case PLUS_EXPR:
 		return expr;
 	case MINUS_EXPR:
 		node = new_node(MINUS_EXPR, TREE_TYPE(expr));
+		break;
 	case BIN_NOT_EXPR:
 		node = new_node(BIN_NOT_EXPR, TREE_TYPE(expr));
+		break;
 	case LOG_NOT_EXPR:
 		node = new_node(LOG_NOT_EXPR, TREE_TYPE(expr));
+		break;
 	default:
 		errx(EXIT_FAILURE, "unexpected: unknown unary expression");
 	}
@@ -940,8 +946,9 @@ tree build_cond_expr(tree cond, tree then, tree els)
 	EXPR_OPERAND(node, 1) = then;
 	EXPR_OPERAND(node, 2) = els;
 
-	if (TREE_IS_CONSTANT(cond))
+	if (TREE_IS_CONSTANT(cond)) {
 		; // TODO
+	}
 
 	return node;
 }
@@ -1135,20 +1142,34 @@ tree build_return(tree expr)
 
 tree build_goto(tree identifier)
 {
+	(void)identifier;
 	errx(EXIT_FAILURE, "Goto is not implemented");
 }
 
-tree build_label(tree identifier)
+tree build_label(tree identifier, tree stmt)
 {
+	(void)identifier;
+	(void)stmt;
 	errx(EXIT_FAILURE, "Label is not implemented");
 }
 
-tree build_case(tree expr)
+tree build_case(tree expr, tree stmt)
 {
+	(void)expr;
+	(void)stmt;
 	errx(EXIT_FAILURE, "Case is not implemented");
 }
 
-tree build_default(void)
+tree build_default(tree stmt)
 {
+	(void)stmt;
 	errx(EXIT_FAILURE, "Default is not implemented");
+}
+
+tree build_sizeof(tree type)
+{
+	tree node = new_node(INTEGER_CST, new_node(INT_TYPE, NULL));
+	INT_VALUE(node) = get_type_size(type);
+	TREE_SET_CONSTANT(node);
+	return node;
 }
