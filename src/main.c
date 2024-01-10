@@ -6,10 +6,6 @@ extern void print_current_context(void);
 
 int main(int argc, char *argv[])
 {
-	args_t args;
-	init_args(&args);
-	parse_args(argc, argv, &args);
-
 	yyparse();
 	print_current_context();
 }

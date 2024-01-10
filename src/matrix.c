@@ -28,8 +28,7 @@ matrix mat_sum(matrix m1, matrix m2)
 	int i, j;
 	for (i = 0; i < m1.rows; ++i) {
 		for (j = 0; j < m1.cols; ++j) {
-			sum.data[i * sum.rows + j] = m1.data[i * m1.rows + j] +
-						     m2.data[i * m2.rows + j];
+			sum.data[i * sum.rows + j] = m1.data[i * m1.rows + j] + m2.data[i * m2.rows + j];
 		}
 	}
 	return sum;
@@ -41,8 +40,7 @@ matrix mat_sub(matrix m1, matrix m2)
 	int i, j;
 	for (i = 0; i < m1.rows; ++i) {
 		for (j = 0; j < m1.cols; ++j) {
-			sub.data[i * sub.rows + j] = m1.data[i * m1.rows + j] -
-						     m2.data[i * m2.rows + j];
+			sub.data[i * sub.rows + j] = m1.data[i * m1.rows + j] - m2.data[i * m2.rows + j];
 		}
 	}
 	return sub;
@@ -58,9 +56,7 @@ matrix mat_mul(matrix m1, matrix m2)
 	for (i = 0; i < m1.rows; ++i) {
 		for (j = 0; j < m2.cols; ++j) {
 			for (k = 0; k < m1.cols; ++k) {
-				mul.data[i * mul.rows + j] +=
-					m1.data[i * m1.rows + k] *
-					m2.data[k * m2.rows + j];
+				mul.data[i * mul.rows + j] += m1.data[i * m1.rows + k] * m2.data[k * m2.rows + j];
 			}
 		}
 	}
@@ -73,8 +69,7 @@ matrix mat_div(matrix m1, matrix m2)
 	int i, j;
 	for (i = 0; i < m1.rows; ++i) {
 		for (j = 0; j < m1.cols; ++j) {
-			div.data[i * div.rows + j] = m1.data[i * m1.rows + j] /
-						     m2.data[i * m2.rows + j];
+			div.data[i * div.rows + j] = m1.data[i * m1.rows + j] / m2.data[i * m2.rows + j];
 		}
 	}
 	return div;
@@ -131,12 +126,10 @@ matrix mat_oppose(matrix m)
 	return mat_mul_scalar(m, -1);
 }
 
-matrix mat_extract(matrix m, int row_start, int row_end, int col_start,
-		   int col_end)
+matrix mat_extract(matrix m, int row_start, int row_end, int col_start, int col_end)
 {
 	// error gestion
-	if (row_end > m.rows || col_end > m.cols || row_start < 0 ||
-	    col_start < 0) {
+	if (row_end > m.rows || col_end > m.cols || row_start < 0 || col_start < 0) {
 		return make_matrix(0, 0);
 	}
 	if (row_start > row_end || col_start > col_end) {
@@ -147,8 +140,7 @@ matrix mat_extract(matrix m, int row_start, int row_end, int col_start,
 	int i, j;
 	for (i = row_start; i < row_end; ++i) {
 		for (j = col_start; j < col_end; ++j) {
-			extract.data[(i - row_start) * extract.rows +
-				     (j - col_start)] = m.data[i * m.rows + j];
+			extract.data[(i - row_start) * extract.rows + (j - col_start)] = m.data[i * m.rows + j];
 		}
 	}
 	return extract;

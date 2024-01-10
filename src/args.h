@@ -1,6 +1,6 @@
-typedef struct args_t{
-    char *input_file;
-    char *output_file;
+typedef struct args_t {
+	char *input_file;
+	char *output_file;
 } args_t;
 
 void help(void);

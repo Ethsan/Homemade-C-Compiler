@@ -147,21 +147,21 @@ const char *tree_code_name(enum tree_code code);
 #define TREE_SET_CONSTANT(node) ((node)->common.is_constant = 1)
 #define TREE_IS_CONSTANT(node) ((node)->common.is_constant)
 
-	struct tree_common{ enum tree_code code;
+struct tree_common {
+	enum tree_code code;
 
-tree chain;
-tree type;
+	tree chain;
+	tree type;
 
-uint has_side_effects : 1;
-uint is_constant : 1;
-uint is_zero : 1;
-uint is_const : 1;
-uint is_volatile : 1;
-uint is_extern : 1;
-uint is_static : 1;
-uint is_signed : 1;
-}
-;
+	uint has_side_effects : 1;
+	uint is_constant : 1;
+	uint is_zero : 1;
+	uint is_const : 1;
+	uint is_volatile : 1;
+	uint is_extern : 1;
+	uint is_static : 1;
+	uint is_signed : 1;
+};
 
 #define ID_NAME(node) ((node)->identifier.name)
 #define ID_LEN(node) ((node)->identifier.len)

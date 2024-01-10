@@ -51,13 +51,14 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# Flex
-*.yy.c
-
-# Bison
-*.tab.h
-*.tab.c
-*.output
-
-# Executable
+# Executables
 main
+test_runner
+
+# lex / yacc output
+parser.tab.*
+lex.yy.c
+
+# Clang tooling
+compile_commands.json
+.cache/
