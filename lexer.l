@@ -154,43 +154,35 @@ while		{ return WHILE; }
 
 	/* Integer constants */
 {INTEGER_CONSTANT}{SUFFIX}? {
-	yylval = get_integer_constant(yytext, yyleng);
+	yylval = parse_integer(yytext, yyleng);
 	return INTEGER_CONSTANT;
 }
 
 	/* Floating constants */
 {FLOATING_CONSTANT}{SUFFIX}? {
-	yylval = get_real_constant(yytext, yyleng);
+	yylval = parse_real(yytext, yyleng);
 	return FLOATING_CONSTANT;
 }
 
 	/* Character constants */
 \'{C_CHAR_SEQUENCE}\' {
-	yylloc.first_column += 1;
-	yylloc.last_column -= 1;
-	yylval = get_char_constant(yytext + 1, yyleng - 2);
+	yylval = parse_char(yytext, yyleng);
 	return CHARACTER_CONSTANT;
 }
 
 L\'{C_CHAR_SEQUENCE}\' {
-	yylloc.first_column += 2;
-	yylloc.last_column -= 1;
-	yylval = get_char_constant(yytext + 2, yyleng - 3);
+	yylval = parse_char(yytext, yyleng);
 	return CHARACTER_CONSTANT;
 }
 
 	/* String literals */
 \"{S_CHAR_SEQUENCE}\" {
-	yylloc.first_column += 1;
-	yylloc.last_column -= 1;
-	yylval = get_string_literal(yytext + 1, yyleng - 2);
+	yylval = parse_string(yytext, yyleng);
 	return STRING_LITERAL;
 }
 
 L\"{S_CHAR_SEQUENCE}\" {
-	yylloc.first_column += 2;
-	yylloc.last_column -= 1;
-	yylval = get_string_literal(yytext + 2, yyleng - 3);
+	yylval = parse_string(yytext, yyleng);
 	return STRING_LITERAL;
 }
 	/* Newlines */

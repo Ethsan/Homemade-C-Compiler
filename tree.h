@@ -1,8 +1,9 @@
 #pragma once
 
 #include <stdint.h>
+#include <sys/types.h>
 
-typedef union tree_node tree;
+typedef union tree_node *tree;
 
 enum tree_code {
 
@@ -19,7 +20,7 @@ enum tree_code {
 	/* tree_integer */
 	INTEGER_CST,
 	/* tree_real */
-	FLOAT_CST,
+	REAL_CST,
 	/* tree_string */
 	STRING_CST,
 
@@ -37,17 +38,19 @@ enum tree_code {
 	/* Types (tree_type)*/
 	VOID_TYPE,
 	INT_TYPE,
-	FLOAT_TYPE,
+	REAL_TYPE,
 	ENUM_TYPE,
+	STRUCT_TYPE,
 	CHAR_TYPE,
 	PTR_TYPE,
 	ARRAY_TYPE,
-	
+	FUNCTION_TYPE,
+
 	/* Statements */
 	IF_STMT,
 	FOR_STMT,
 	WHILE_STMT,
-	DOWHILE_STMT,
+	DO_WHILE_STMT,
 	EMPTY_STMT,
 
 	/* Operand 0: label */
@@ -90,8 +93,8 @@ enum tree_code {
 	PRE_DECR_EXPR,
 
 	/* Operand 0: expression */
-	NOT_EXPR,
-	NEG_EXPR,
+	PLUS_EXPR,
+	MINUS_EXPR,
 
 	/* Operand 0: left operand
 	 * Operand 1: right operand */
@@ -111,6 +114,7 @@ enum tree_code {
 	LOG_AND_EXPR,
 	LOG_OR_EXPR,
 	LOG_NOT_EXPR,
+	TRUTH_EXPR,
 
 	GE_EXPR,
 	LE_EXPR,
@@ -129,28 +133,42 @@ enum tree_code {
 	CONV_EXPR,
 };
 
+#define TREE_CODE(node) ((node)->common.code)
+#define TREE_TYPE(node) ((node)->common.type)
+#define TREE_CHAIN(node) ((node)->common.chain)
+#define TREE_CONSTANT(node) ((node)->common.is_constant)
+
+#define TREE_SET_CONSTANT(node) ((node)->common.is_constant = 1)
+#define TREE_IS_CONSTANT(node) ((node)->common.is_constant)
+
 struct tree_common {
 	enum tree_code code;
 
-	tree *chain;
-	tree *type;
+	tree chain;
+	tree type;
 
-	int has_side_effects : 1;
-	int is_constant : 1;
-	int is_zero : 1;
-	int is_const : 1;
-	int is_volatile : 1;
-	int is_extern : 1;
-	int is_static : 1;
-	int is_signed : 1;
+	uint has_side_effects : 1;
+	uint is_constant : 1;
+	uint is_zero : 1;
+	uint is_const : 1;
+	uint is_volatile : 1;
+	uint is_extern : 1;
+	uint is_static : 1;
+	uint is_signed : 1;
 };
+
+#define ID_NAME(node) ((node)->identifier.name)
+#define ID_LEN(node) ((node)->identifier.len)
 
 struct tree_identifier {
 	struct tree_common common;
 
 	char *name;
-	int length;
+	int len;
 };
+
+#define INT_SIZE(node) ((node)->integer.size)
+#define INT_VALUE(node) ((node)->integer.value)
 
 struct tree_integer {
 	struct tree_common common;
@@ -159,6 +177,9 @@ struct tree_integer {
 	uint64_t value;
 };
 
+#define REAL_SIZE(node) ((node)->real.size)
+#define REAL_VALUE(node) ((node)->real.value)
+
 struct tree_real {
 	struct tree_common common;
 
@@ -166,70 +187,109 @@ struct tree_real {
 	double value;
 };
 
+#define STRING_LEN(node) ((node)->string.len)
+#define STRING_VALUE(node) ((node)->string.value)
+
 struct tree_string {
 	struct tree_common common;
 
-	int length;
+	int len;
 	char *value;
 };
+
+#define DECL_NAME(node) ((node)->decl.name)
+#define DECL_UID(node) ((node)->decl.uid)
+
+#define DECL_PARM_LIST(node) ((node)->decl.parm_list)
+#define DECL_BODY(node) ((node)->decl.body)
 
 struct tree_decl {
 	struct tree_common common;
 
 	unsigned int uid;
-	tree *name;
+	tree name;
+
+	// for functions
+	tree parm_list;
+	tree body;
 };
+
+#define TYPE_SIZE(node) ((node)->type.size)
+#define TYPE_PARM_LIST(node) ((node)->type.parm_list)
 
 struct tree_type {
 	struct tree_common common;
 
-	unsigned int uid;
-	tree *name;
+	union {
+		// for arrays
+		int size;
+		// for functions
+		tree parm_list;
+	};
 };
+
+#define EXPR_OPERAND(node, idx) ((node)->expr.operands[idx])
+#define EXPR_VALUE(node) ((node)->expr.value)
 
 struct tree_expr {
 	struct tree_common common;
 
-	tree *operand[4];
+	tree operands[4];
+
+	// for incr and decr
+	uint64_t value;
 };
+
+#define BLOCK_VARS(node) ((node)->block.vars)
+#define BLOCK_TYPES(node) ((node)->block.types)
+
+#define BLOCK_SUBBLOCKS(node) ((node)->block.subblocks)
+#define BLOCK_SUPERBLOCK(node) ((node)->block.superblock)
+
+#define BLOCK_BODY(node) ((node)->block.body)
 
 struct tree_block {
 	struct tree_common common;
 
-	tree *decls;
-	tree *types;
+	tree vars;
+	tree types;
 
-	tree *subblocks;
-	tree *superblock;
+	tree subblocks;
+	tree superblock;
 
-	tree *body;
+	tree body;
 };
+
+#define LIST_VALUE(node) ((node)->list.value)
 
 struct tree_list {
 	struct tree_common common;
 
-	tree *node;
+	tree value;
 };
+
+#define IF_COND(node) ((node)->if_stmt.cond)
+#define IF_YES(node) ((node)->if_stmt.yes)
+#define IF_NO(node) ((node)->if_stmt.no)
 
 struct tree_if {
 	struct tree_common common;
-	tree *cond;
-	tree *true;
-	tree *false;
+	tree cond;
+	tree yes;
+	tree no;
 };
 
-struct tree_for {
-	struct tree_common common;
-	tree *init;
-	tree *cond;
-	tree *step;
-	tree *body;
-};
+#define ITER_INIT(node) ((node)->iter.init)
+#define ITER_COND(node) ((node)->iter.cond)
+#define ITER_INCR(node) ((node)->iter.incr)
+#define ITER_BODY(node) ((node)->iter.body)
 
-struct tree_while {
+struct tree_iter {
 	struct tree_common common;
-	tree *cond;
-	tree *body;
+	tree init;
+	tree cond;
+	tree incr;
+	tree body;
 };
 
 union tree_node {
@@ -244,58 +304,72 @@ union tree_node {
 	struct tree_block block;
 	struct tree_list list;
 	struct tree_if if_stmt;
-	struct tree_for for_stmt;
-	struct tree_while while_stmt;
+	struct tree_iter iter;
 };
 
-tree *node_void_type;
+tree new_node(enum tree_code code, tree type);
 
-tree *node_char_type;
-tree *node_short_type;
-tree *node_int_type;
-tree *node_long_type;
-tree *node_long_long_type;
+tree chain_append(tree chain, tree node);
 
-tree *node_float_type;
-tree *node_double_type;
-tree *node_long_double_type;
+tree type_append(tree node, tree type);
 
-tree *new_node(enum tree_code code, tree *type);
+tree get_identifier(const char *name, int len);
 
-void start_unit(void);
+tree parse_integer(const char *value, int len);
 
-tree *end_unit(void);
+tree parse_real(const char *value, int len);
 
-void chain_append(tree *chain, tree *node);
+tree parse_string(const char *value, int len);
 
-void chain_prepend(tree *chain, tree *node);
-
-void type_append(tree *node, tree *type);
-
-tree *get_identifier(char *name, int len);
-
-tree *get_integer_constant(char *value, int len);
-
-tree *get_char_constant(char *value, int len);
-
-tree *get_real_constant(char *value, int len);
-
-tree *get_string(char *value, int len);
+tree parse_char(const char *value, int len);
 
 void start_block(void);
 
-tree *end_block(void);
+tree end_block(tree body);
 
-tree *get_decl(tree *name);
+void start_function(tree decl);
 
-tree *new_decl(enum tree_code code, tree *name, tree *type);
+tree end_function(tree body);
 
-tree *new_function_decl(tree *name, tree *type, tree *args, tree *body);
+tree get_decl(tree id);
 
-tree *new_variable_decl(tree *name, tree *type, tree *value);
+tree emit_decl(tree decl);
 
-void start_enum(tree *name);
+int is_constant(tree node);
 
-tree *end_enum(void);
+tree build_unary_expr(enum tree_code code, tree node);
 
-tree *build_expr(enum tree_code code, tree *operand0, tree *operand1, tree *operand2, tree *operand3);
+tree build_expr(enum tree_code code, tree lhs, tree rhs);
+
+tree build_cond_expr(tree cond, tree yes, tree no);
+
+tree build_if(tree cond, tree yes, tree no);
+
+void start_for(tree init, tree cond, tree incr);
+
+tree end_for(tree body);
+
+void start_while(tree cond);
+
+tree end_while(tree body);
+
+void start_do_while();
+
+tree end_do_while(tree body, tree cond);
+
+tree build_break(void);
+
+tree build_continue(void);
+
+tree build_return(tree value);
+
+tree build_label(tree label);
+
+tree build_case(tree expr);
+
+tree build_default(void);
+
+tree build_goto(tree label);
+
+tree build_call(tree func, tree args);
+

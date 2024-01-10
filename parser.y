@@ -10,13 +10,24 @@ extern int yylex(void);
 
 %define parse.error verbose
 
+%union {
+	tree tree;
+	enum tree_code code;
+}
+
+%token <tree> IDENTIFIER
+%token <tree> INTEGER_CONSTANT
+%token <tree> FLOATING_CONSTANT
+%token <tree> ENUMERATION_CONSTANT
+%token <tree> CHARACTER_CONSTANT
+%token <tree> STRING_LITERAL
+%token <tree> TYPE_NAME
+
 %token AUTO DOUBLE INT STRUCT BREAK ELSE 
 %token LONG SWITCH CASE ENUM REGISTER TYPEDEF CHAR
 %token EXTERN RETURN UNION CONST FLOAT SHORT UNSIGNED
 %token CONTINUE FOR SIGNED VOID DEFAULT GOTO SIZEOF
 %token VOLATILE DO IF STATIC WHILE
-%token IDENTIFIER INTEGER_CONSTANT FLOATING_CONSTANT
-%token ENUMERATION_CONSTANT CHARACTER_CONSTANT STRING_LITERAL
 %token LBRACKET RBRACKET LPAREN RPAREN LBRACE RBRACE 
 %token COMMA DOT ARROW INCREMENT DECREMENT AND STAR
 %token PLUS MINUS TILDE EXCLAMATION SLASH PERCENT
@@ -28,7 +39,70 @@ extern int yylex(void);
 %token PLUS_PLUS MINUS_MINUS COLON QUESTION OR_OR AND_AND
 %token OR XOR ELLIPSIS SEMICOLON
 
-%token TYPE_NAME
+%type <tree> primary_expression
+%type <tree> postfix_expression
+%type <tree> unary_expression
+%type <tree> cast_expression
+%type <tree> multiplicative_expression
+%type <tree> additive_expression
+%type <tree> shift_expression
+%type <tree> relational_expression
+%type <tree> equality_expression
+%type <tree> AND_expression
+%type <tree> exclusive_OR_expresion
+%type <tree> inclusive_OR_expression
+%type <tree> logical_AND_expression
+%type <tree> logical_OR_expression
+%type <tree> conditional_expression
+%type <tree> assignement_expression
+%type <tree> expression
+%type <tree> constant_expression
+%type <tree> declaration
+%type <tree> declaration_specifiers
+%type <tree> init_declarator_list
+%type <tree> init_declarator
+%type <tree> storage_class_specifier
+%type <tree> type_specifier
+%type <tree> struct_or_union_specifier
+%type <tree> struct_or_union
+%type <tree> struct_declaration_list
+%type <tree> struct_declaration
+%type <tree> struct_declarator_list
+%type <tree> struct_declarator
+%type <tree> enum_specifier
+%type <tree> enumerator_list
+%type <tree> enumerator
+%type <tree> type_qualifier
+%type <tree> declarator
+%type <tree> direct_declarator
+%type <tree> pointer
+%type <tree> type_qualifier_list
+%type <tree> parameter_type_list
+%type <tree> parameter_list
+%type <tree> parameter_declaration
+%type <tree> type_name
+%type <tree> abstract_declarator
+%type <tree> direct_abstract_declarator
+%type <tree> constant
+%type <tree> specifier_qualifier_list
+%type <tree> identifier_list
+%type <tree> initializer
+%type <tree> initializer_list
+%type <tree> statement
+%type <tree> labeled_statement
+%type <tree> compound_statement
+%type <tree> declaration_list
+%type <tree> statement_list
+%type <tree> expression_statement
+%type <tree> selection_statement
+%type <tree> iteration_statement
+%type <tree> jump_statement
+%type <tree> external_declaration
+%type <tree> function_definition
+%type <tree> argument_expression_list
+
+%type <code> assignement_operator
+%type <code> unary_operator
 
 %right THEN ELSE
 
@@ -55,7 +129,7 @@ primary_expression
 postfix_expression
 	: primary_expression
 	| postfix_expression LBRACKET expression RBRACKET {
-		$$ = build_deref(build_expr(ADD_EXPR, $1, $3));
+		$$ = build_unary_expr(DEREF_EXPRE, build_expr(ADD_EXPR, $1, $3));
 	}
 	| postfix_expression LPAREN RPAREN {
 		$$ = build_call($1, NULL);
@@ -88,7 +162,7 @@ unary_expression
 		$$ = build_incr_expr(PRE_DECR_EXPR, $2);
 	}
 	| unary_operator cast_expression {
-		$$ = build_expr($1, NULL, $2);
+		$$ = build_unary_expr($1, $2);
 	}
 	| SIZEOF unary_expression {
 		$$ = build_sizeof($2);
@@ -100,7 +174,7 @@ unary_expression
 
 unary_operator
 	: AND { $$ = ADDR_EXPR; }
-	| STAR { $$ = DEREF_EXPR; }
+	| STAR { $$ = INDIRECT_REF; }
 	| PLUS { $$ = PLUS_EXPR; }
 	| MINUS { $$ = MINUS_EXPR; }
 	| TILDE { $$ = BIN_NOT_EXPR; }
@@ -235,7 +309,7 @@ logical_OR_expression
 conditional_expression
 	: logical_OR_expression 
 	| logical_OR_expression QUESTION expression COLON conditional_expression {
-		$$ = build_conditional($1, $3, $5);
+		$$ = build_cond_expr($1, $3, $5);
 	}
 	;
 
@@ -277,7 +351,12 @@ expression
 /* 2. Constant Expressions */
 
 constant_expression
-	: conditional_expression
+	: conditional_expression {
+		if (!is_constant($1)) {
+			YYERROR("constant_expression must be constant");
+		}
+		$$ = $1;
+	}
 	;
 
 /* 3. Declarations */
@@ -289,7 +368,7 @@ declaration
 	| declaration_specifiers init_declarator_list SEMICOLON {
 		for (tree t = $2; t != NULL; ) {
 			type_append(TREE_VALUE(t), $1);
-			emit_declaration(TREE_VALUE(t));
+			emit_decl(TREE_VALUE(t));
 
 			tree next = TREE_CHAIN(t);
 			free(t);
@@ -319,11 +398,10 @@ declaration_specifiers
 	}
 	| type_qualifier declaration_specifiers {
 		if (is_qualifier($2)) {
-			tree_chain_append($2, $1);
+			$$ = chain_append($2, $1);
 		} else {
-			type_qual_append($2, $1);
+			$$ = type_qual_append($2, $1);
 		}
-		$$ = $2;
 	}
 	;
 	
@@ -333,7 +411,7 @@ init_declarator_list
 	}
 	| init_declarator_list COMMA init_declarator {
 		$$ = new_node(TREE_LIST, $3);
-		tree_chain_append($$, $1);
+		$$ = chain_append($$, $1);
 	}
 	;
 
@@ -377,14 +455,14 @@ type_specifier
 /*		3.2.1. Struct or union specifiers */
 
 struct_or_union_specifier
-	: struct_or_union LBRACE struct_declaration_list RBRACE
-	| struct_or_union IDENTIFIER
-	| struct_or_union IDENTIFIER LBRACE struct_declaration_list RBRACE
+	: struct_or_union LBRACE struct_declaration_list RBRACE { $$ = NULL; }
+	| struct_or_union IDENTIFIER { $$ = NULL; }
+	| struct_or_union IDENTIFIER LBRACE struct_declaration_list RBRACE { $$ = NULL; }
 	;
 
 struct_or_union
-	: STRUCT
-	| UNION
+	: STRUCT { $$ = NULL; }
+	| UNION { $$ = NULL; }
 	;
 
 struct_declaration_list	
@@ -393,7 +471,7 @@ struct_declaration_list
 	;
 
 struct_declaration
-	: specifier_qualifier_list struct_declarator_list SEMICOLON
+	: specifier_qualifier_list struct_declarator_list SEMICOLON { $$ = NULL; }
 	;
 
 struct_declarator_list
@@ -403,16 +481,16 @@ struct_declarator_list
 
 struct_declarator
 	: declarator
-	| COLON constant_expression
+	| COLON constant_expression { $$ = NULL; }
 	| declarator COLON constant_expression
 	;
 
 /*		3.2.2. Enumeration specifiers */
 
 enum_specifier
-	: ENUM LBRACE enumerator_list RBRACE
-	| ENUM IDENTIFIER LBRACE enumerator_list RBRACE
-	| ENUM IDENTIFIER
+	: ENUM LBRACE enumerator_list RBRACE { $$ = NULL; }
+	| ENUM IDENTIFIER LBRACE enumerator_list RBRACE { $$ = NULL; }
+	| ENUM IDENTIFIER { $$ = NULL; }
 	;
 
 enumerator_list
@@ -468,7 +546,7 @@ direct_declarator
 			DECL_PARM_LIST($1) = $3;
 		} else {
 			tree func_type = new_node(FUNCTION_TYPE, TREE_TYPE($1));
-			TYPE_ARGS(func_type) = $3;
+			TYPE_PARM_LIST(func_type) = $3;
 			TREE_TYPE($1) = func_type;
 		}
 		$$ = $1;
@@ -511,7 +589,7 @@ type_qualifier_list
 		$$ = $1;
 	}
 	| type_qualifier_list type_qualifier {
-		tree_chain_append($1, $2);
+		chain_append($1, $2);
 		$$ = $1;
 	}
 	;
@@ -527,21 +605,21 @@ parameter_type_list
 
 parameter_list
 	: parameter_declaration {
-		$$ = $1;
+		$$ = new_node(TREE_LIST, $1);
 	}
 	| parameter_list COMMA parameter_declaration {
-		tree_chain_append($1, $3);
-		$$ = $1;
+		$$ = chain_append($1, new_node(TREE_LIST, $3));
 	}
 	;
 
 parameter_declaration
 	: declaration_specifiers declarator {
-		type_append($2, $1);
-		$$ = new_node(PARM_DECL, $2);
+		TREE_TYPE($2) = type_append(TREE_TYPE($2), $1);
+		TREE_CODE($2) = PARM_DECL;
+		$$ = $1
 	}	
 	| declaration_specifiers abstract_declarator {
-		type_append($2, $1);
+		$2 = type_append($2, $1);
 		$$ = new_node(PARM_DECL, $2);
 	}
 	| declaration_specifiers {
@@ -598,14 +676,14 @@ direct_abstract_declarator
 	}
 	| LPAREN parameter_type_list RPAREN  {
 		$$ = new_node(FUNCTION_TYPE, NULL);
-		TYPE_ARGS($$) = $2;
+		TYPE_PARM_LIST($$) = $2;
 	}
 	| direct_abstract_declarator LPAREN RPAREN {
 		$$ = new_node(FUNCTION_TYPE, TREE_TYPE($1));
 	}
 	| direct_abstract_declarator LPAREN parameter_type_list RPAREN {
 		$$ = new_node(FUNCTION_TYPE, TREE_TYPE($1));
-		TYPE_ARGS($$) = $3;
+		TYPE_PARM_LIST($$) = $3;
 	}
 	;
 
@@ -631,7 +709,7 @@ specifier_qualifier_list
 	}
 	| type_qualifier specifier_qualifier_list {
 		if (is_qualifier($2)) {
-			tree_chain_append($2, $1);
+			chain_append($2, $1);
 		} else {
 			type_qual_append($2, $1);
 		}
@@ -645,7 +723,7 @@ identifier_list
 	}
 	| identifier_list COMMA IDENTIFIER {
 		$$ = new_node(TREE_LIST, $3);
-		tree_chain_append($$, $1);
+		chain_append($$, $1);
 	}
 	;
 
@@ -669,7 +747,7 @@ initializer_list
 	}
 	| initializer_list COMMA initializer {
 		$$ = new_node(TREE_LIST, $3);
-		tree_chain_append($$, $1);
+		chain_append($$, $1);
 	}
 	;
 
@@ -677,7 +755,11 @@ initializer_list
 
 statement
 	: labeled_statement
-	| compound_statement
+	| {
+		start_block();
+	} compound_statement {
+		$$ = end_block($2);
+	}
 	| expression_statement
 	| selection_statement
 	| iteration_statement
@@ -701,25 +783,19 @@ labeled_statement
 /*	4.2. Compound statements, or block */
 
 compound_statement
-	: {
-		start_block();
-	} LBRACE RBRACE {
-		$$ = end_block(NULL);
+	: LBRACE RBRACE {
+		$$ = NULL;
 	}
-	| {
-		start_block();
-	} LBRACE statement_list RBRACE {
-		$$ = end_block($2)
+	| LBRACE statement_list RBRACE {
+		$$ = $2;
 	}
-	| {
-		start_block();
-	} LBRACE declaration_list RBRACE {
-		$$ = end_block(NULL)
+	|
+	LBRACE declaration_list RBRACE {
+		$$ = NULL;
 	}
-	| {
-		start_block();
-	} LBRACE declaration_list statement_list RBRACE {
-		$$ = end_block($3);
+	|
+	LBRACE declaration_list statement_list RBRACE {
+		$$ = $3;
 	}
 	;
 
@@ -728,7 +804,7 @@ declaration_list
 		$$ = $1;
 	}
 	| declaration_list declaration {
-		tree_chain_append($1, $2);
+		chain_append($1, $2);
 		$$ = $1;
 	}
 	;
@@ -738,7 +814,7 @@ statement_list
 		$$ = $1;
 	}
 	| statement_list statement {
-		tree_chain_append($1, $2);
+		chain_append($1, $2);
 		$$ = $1;
 	}
 	;
@@ -771,14 +847,20 @@ selection_statement
 /* 	4.5. Iteration statements */
 
 iteration_statement
-	: WHILE LPAREN expression RPAREN statement {
-		$$ = build_while($3, $5);
+	: WHILE LPAREN expression RPAREN {
+		start_while($3);
+	} statement {
+		$$ = end_while($6);
 	}
-	| DO statement WHILE LPAREN expression RPAREN SEMICOLON {
-		$$ = build_do_while($5, $2);
+	| {
+		start_do_while();
+	} DO statement WHILE LPAREN expression RPAREN SEMICOLON {
+		$$ = end_do_while($6, $3);
 	}
-	| FOR LPAREN expression_statement expression_statement RPAREN statement {
-		$$ = build_for($3, $4, $5, $6); /* FIXME */
+	| FOR LPAREN expression_statement expression_statement expression RPAREN {
+		start_for($3, $4, $5);
+	} statement {
+		$$ = end_for($8);
 	}
 	;
 
@@ -805,7 +887,7 @@ jump_statement
 /* 5. External definitions */
 
 translation_unit
-	: { start_unit(); } external_declaration
+	: external_declaration 
 	| translation_unit external_declaration
 	;
 
@@ -821,9 +903,9 @@ function_definition
 		YYERROR("declaration_list not implemented");
 	}
 	| declaration_specifiers declarator {
-		$$ = new_node(FUNCTION_DECL, $2);
+		$<tree>$ = new_node(FUNCTION_DECL, $2);
 		type_append($2, $1);
-		start_function($$);
+		start_function($<tree>$);
 	} compound_statement { 
 		end_function($4);
 	}
@@ -832,8 +914,8 @@ function_definition
 	}
 	| declarator {
 		type_append($1, new_node(INT_TYPE, NULL));
-		$$ = new_node(FUNCTION_DECL, $1);
-		start_function($$);
+		$<tree>$ = new_node(FUNCTION_DECL, $1);
+		start_function($<tree>$);
 	} compound_statement {
 		end_function($3);
 	}
@@ -842,8 +924,8 @@ function_definition
 argument_expression_list
 	: assignement_expression
 	| argument_expression_list COMMA assignement_expression {
-		$$ = new_node(TREE_LIST, $3);
-		tree_chain_append($$, $1);
+		tree t = new_node(TREE_LIST, $3);
+		$$ = chain_append($1, t);
 	}
 	;
 
