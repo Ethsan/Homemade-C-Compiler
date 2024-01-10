@@ -7,133 +7,137 @@
 
 typedef union tree_node *tree;
 
-enum tree_code {
+#define TREE_CODE_ENUM                         \
+	X(NONE)                                \
+	/* tree_identifier */                  \
+	X(IDENTIFIER_NODE)                     \
+                                               \
+	/* tree_block */                       \
+	X(BLOCK_NODE)                          \
+                                               \
+	X(TREE_LIST)                           \
+                                               \
+	/* Constants */                        \
+	/* tree_integer */                     \
+	X(INTEGER_CST)                         \
+	/* tree_real */                        \
+	X(REAL_CST)                            \
+	/* tree_string */                      \
+	X(STRING_CST)                          \
+                                               \
+	X(CONST_QUAL)                          \
+	X(VOLATILE_QUAL)                       \
+                                               \
+	/* Declarations (tree_decl)*/          \
+	X(VARIABLE_DECL)                       \
+	X(FUNCTION_DECL)                       \
+	X(ENUM_DECL)                           \
+	X(TYPE_DECL)                           \
+	X(PARM_DECL)                           \
+	X(LABEL_DECL)                          \
+                                               \
+	/* Types (tree_type)*/                 \
+	X(VOID_TYPE)                           \
+	X(INT_TYPE)                            \
+	X(REAL_TYPE)                           \
+	X(ENUM_TYPE)                           \
+	X(STRUCT_TYPE)                         \
+	X(CHAR_TYPE)                           \
+	X(PTR_TYPE)                            \
+	X(ARRAY_TYPE)                          \
+	X(FUNCTION_TYPE)                       \
+                                               \
+	/* Statements */                       \
+	X(IF_STMT)                             \
+	X(FOR_STMT)                            \
+	X(WHILE_STMT)                          \
+	X(DO_WHILE_STMT)                       \
+	X(EMPTY_STMT)                          \
+                                               \
+	/* Operand 0: label */                 \
+	X(LABEL_STMT)                          \
+	/* Operand 0: label */                 \
+	X(GOTO_STMT)                           \
+                                               \
+	X(BREAK_STMT)                          \
+	X(CONTINUE_STMT)                       \
+                                               \
+	/* Operand 0: value to return */       \
+	X(RETURN_STMT)                         \
+                                               \
+	/* References */                       \
+	/* Operand 0: variable to reference */ \
+	X(INDIRECT_REF)                        \
+	/* Operand 0: variable to reference \
+ * Operand 1: component to reference */  \
+	X(MEMBER_REF)                          \
+                                               \
+	/* Expressions */                      \
+                                               \
+	X(COMPOUND_EXPR)                       \
+	/* Operand 0: value to assign \
+ * Operand 1: value to assign to */        \
+	X(ASSIGN_EXPR)                         \
+                                               \
+	/* Operand 0: variable to reference */ \
+	X(ADDR_EXPR)                           \
+                                               \
+	/* Operand 0: function to call \
+ * Operand 1: chain of arguments */       \
+	X(CALL_EXPR)                           \
+                                               \
+	/* Operand 0: assignment target \
+ * Operand 1: value to increment/decrement by */      \
+	X(POST_INCR_EXPR)                      \
+	X(POST_DECR_EXPR)                      \
+	X(PRE_INCR_EXPR)                       \
+	X(PRE_DECR_EXPR)                       \
+                                               \
+	/* Operand 0: expression */            \
+	X(PLUS_EXPR)                           \
+	X(MINUS_EXPR)                          \
+                                               \
+	/* Operand 0: left operand \
+ * Operand 1: right operand */           \
+	X(MUL_EXPR)                            \
+	X(ADD_EXPR)                            \
+	X(SUB_EXPR)                            \
+	X(DIV_EXPR)                            \
+	X(MOD_EXPR)                            \
+                                               \
+	X(LSHIFT_EXPR)                         \
+	X(RSHIFT_EXPR)                         \
+	X(BIN_AND_EXPR)                        \
+	X(BIN_OR_EXPR)                         \
+	X(BIN_XOR_EXPR)                        \
+	X(BIN_NOT_EXPR)                        \
+                                               \
+	X(LOG_AND_EXPR)                        \
+	X(LOG_OR_EXPR)                         \
+	X(LOG_NOT_EXPR)                        \
+	X(TRUTH_EXPR)                          \
+                                               \
+	X(GE_EXPR)                             \
+	X(LE_EXPR)                             \
+	X(GT_EXPR)                             \
+	X(LT_EXPR)                             \
+	X(EQ_EXPR)                             \
+	X(NE_EXPR)                             \
+                                               \
+	/* Operand 0: condition \
+ * Operand 1: true value \
+ * Operand 2: false value */              \
+	X(COND_EXPR)                           \
+                                               \
+	/* Operand 0: expression to cast \
+ * Operand 1: type to cast to */     \
+	X(CONV_EXPR)
 
-	NONE,
-	/* tree_identifier */
-	IDENTIFIER_NODE,
+#define X(a) a,
+enum tree_code { TREE_CODE_ENUM };
+#undef X
 
-	/* tree_block */
-	BLOCK_NODE,
-
-	TREE_LIST,
-
-	/* Constants */
-	/* tree_integer */
-	INTEGER_CST,
-	/* tree_real */
-	REAL_CST,
-	/* tree_string */
-	STRING_CST,
-
-	CONST_QUAL,
-	VOLATILE_QUAL,
-
-	/* Declarations (tree_decl)*/
-	VARIABLE_DECL,
-	FUNCTION_DECL,
-	ENUM_DECL,
-	TYPE_DECL,
-	PARM_DECL,
-	LABEL_DECL,
-
-	/* Types (tree_type)*/
-	VOID_TYPE,
-	INT_TYPE,
-	REAL_TYPE,
-	ENUM_TYPE,
-	STRUCT_TYPE,
-	CHAR_TYPE,
-	PTR_TYPE,
-	ARRAY_TYPE,
-	FUNCTION_TYPE,
-
-	/* Statements */
-	IF_STMT,
-	FOR_STMT,
-	WHILE_STMT,
-	DO_WHILE_STMT,
-	EMPTY_STMT,
-
-	/* Operand 0: label */
-	LABEL_STMT,
-	/* Operand 0: label */
-	GOTO_STMT,
-
-	BREAK_STMT,
-	CONTINUE_STMT,
-
-	/* Operand 0: value to return */
-	RETURN_STMT,
-
-	/* References */
-	/* Operand 0: variable to reference */
-	INDIRECT_REF,
-	/* Operand 0: variable to reference
-	 * Operand 1: component to reference */
-	MEMBER_REF,
-
-	/* Expressions */
-
-	COMPOUND_EXPR,
-	/* Operand 0: value to assign
-	 * Operand 1: value to assign to */
-	ASSIGN_EXPR,
-
-	/* Operand 0: variable to reference */
-	ADDR_EXPR,
-
-	/* Operand 0: function to call
-	 * Operand 1: chain of arguments */
-	CALL_EXPR,
-
-	/* Operand 0: assignment target
-	 * Operand 1: value to increment/decrement by */
-	POST_INCR_EXPR,
-	POST_DECR_EXPR,
-	PRE_INCR_EXPR,
-	PRE_DECR_EXPR,
-
-	/* Operand 0: expression */
-	PLUS_EXPR,
-	MINUS_EXPR,
-
-	/* Operand 0: left operand
-	 * Operand 1: right operand */
-	MUL_EXPR,
-	ADD_EXPR,
-	SUB_EXPR,
-	DIV_EXPR,
-	MOD_EXPR,
-
-	LSHIFT_EXPR,
-	RSHIFT_EXPR,
-	BIN_AND_EXPR,
-	BIN_OR_EXPR,
-	BIN_XOR_EXPR,
-	BIN_NOT_EXPR,
-
-	LOG_AND_EXPR,
-	LOG_OR_EXPR,
-	LOG_NOT_EXPR,
-	TRUTH_EXPR,
-
-	GE_EXPR,
-	LE_EXPR,
-	GT_EXPR,
-	LT_EXPR,
-	EQ_EXPR,
-	NE_EXPR,
-
-	/* Operand 0: condition
-	 * Operand 1: true value
-	 * Operand 2: false value */
-	COND_EXPR,
-
-	/* Operand 0: expression to cast
-	 * Operand 1: type to cast to */
-	CONV_EXPR,
-};
+const char *tree_code_name(enum tree_code code);
 
 #define TREE_CODE(node) ((node)->common.code)
 #define TREE_TYPE(node) ((node)->common.type)
@@ -143,21 +147,21 @@ enum tree_code {
 #define TREE_SET_CONSTANT(node) ((node)->common.is_constant = 1)
 #define TREE_IS_CONSTANT(node) ((node)->common.is_constant)
 
-struct tree_common {
-	enum tree_code code;
+	struct tree_common{ enum tree_code code;
 
-	tree chain;
-	tree type;
+tree chain;
+tree type;
 
-	uint has_side_effects : 1;
-	uint is_constant : 1;
-	uint is_zero : 1;
-	uint is_const : 1;
-	uint is_volatile : 1;
-	uint is_extern : 1;
-	uint is_static : 1;
-	uint is_signed : 1;
-};
+uint has_side_effects : 1;
+uint is_constant : 1;
+uint is_zero : 1;
+uint is_const : 1;
+uint is_volatile : 1;
+uint is_extern : 1;
+uint is_static : 1;
+uint is_signed : 1;
+}
+;
 
 #define ID_NAME(node) ((node)->identifier.name)
 #define ID_LEN(node) ((node)->identifier.len)
@@ -378,4 +382,3 @@ tree build_default(tree stmt);
 tree build_goto(tree label);
 
 tree build_call(tree func, tree args);
-

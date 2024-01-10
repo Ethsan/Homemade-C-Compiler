@@ -18,6 +18,19 @@
 
 #define FLOAT_TYPE_SIZE 4
 
+#define X(node)    \
+	case node: \
+		return #node;
+const char *tree_code_name(enum tree_code code)
+{
+	switch (code) {
+		TREE_CODE_ENUM
+	default:
+		return "unexpected";
+	}
+}
+#undef X
+
 int is_expr(enum tree_code code)
 {
 	switch (code) {
@@ -48,37 +61,17 @@ int is_expr(enum tree_code code)
 	case COND_EXPR:
 	case ASSIGN_EXPR:
 	case COMPOUND_EXPR:
+	case RETURN_STMT:
 		return 1;
 	default:
 		return 0;
 	}
 }
 
-void print_ast(tree node, int indent)
+void print_indent(int indent)
 {
-	if (node == NULL)
-		return;
-
 	for (int i = 0; i < indent; i++)
 		printf("  ");
-
-	printf("%d", TREE_CODE(node));
-
-	if (TREE_CODE(node) == IDENTIFIER_NODE) {
-		printf(": %.*s", ID_LEN(node), ID_NAME(node));
-	}
-
-	printf("\n");
-
-	if (is_expr(TREE_CODE(node))) {
-		for (int i = 0; i < 4; i++) {
-			if (EXPR_OPERAND(node, i) != NULL) {
-				print_ast(EXPR_OPERAND(node, i), indent + 1);
-			}
-		}
-	}
-
-	print_ast(TREE_CHAIN(node), indent);
 }
 
 void print_type(tree type)
@@ -116,8 +109,64 @@ void print_type(tree type)
 		printf("%.*s", ID_LEN(type), ID_NAME(type));
 		break;
 	default:
-		errx(EXIT_FAILURE, "unexpected: unknown type");
+		printf("Not a type %s", tree_code_name(TREE_CODE(type)));
 	}
+}
+
+void print_ast(tree node, int indent, int is_chain)
+{
+	if (node == NULL)
+		return;
+
+	print_indent(indent);
+	printf("%s", tree_code_name(TREE_CODE(node)));
+
+	if (TREE_CODE(node) == IDENTIFIER_NODE) {
+		printf(": %.*s", ID_LEN(node), ID_NAME(node));
+	}
+	if (TREE_CODE(node) == VARIABLE_DECL || TREE_CODE(node) == FUNCTION_DECL || TREE_CODE(node) == PARM_DECL) {
+		printf(": %u", DECL_UID(node));
+	}
+
+	printf(" (");
+	if (TREE_CODE(node) == TREE_LIST) {
+		printf(": %s", tree_code_name(TREE_CODE(TREE_TYPE(node))));
+	} else {
+		print_type(TREE_TYPE(node));
+	}
+	printf(")");
+	printf("\n");
+
+	if (is_expr(TREE_CODE(node))) {
+		for (int i = 0; i < 4; i++) {
+			if (EXPR_OPERAND(node, i) != NULL) {
+				print_ast(EXPR_OPERAND(node, i), indent + 1, 0);
+			}
+		}
+	}
+
+	if (TREE_CODE(node) == VARIABLE_DECL || TREE_CODE(node) == FUNCTION_DECL || TREE_CODE(node) == PARM_DECL) {
+		print_ast(DECL_NAME(node), indent + 1, 1);
+	}
+
+	if (TREE_CODE(node) == BLOCK_NODE) {
+		tree vars = BLOCK_VARS(node);
+		print_indent(indent);
+		printf("Variables:\n");
+		print_ast(vars, indent + 1, 1);
+		print_indent(indent);
+		printf("Body:\n");
+		print_ast(BLOCK_BODY(node), indent + 1, 1);
+	}
+
+	if (TREE_CODE(node) == FUNCTION_DECL) {
+		print_ast(DECL_NAME(node), indent + 1, 1);
+		print_ast(DECL_PARM_LIST(node), indent + 1, 1);
+		print_ast(DECL_BODY(node), indent + 1, 1);
+	}
+
+	if (is_chain)
+		print_ast(TREE_CHAIN(node), indent, 1);
 }
 
 tree identifier_table[TABLE_SIZE] = { 0 };
@@ -148,14 +197,16 @@ tree get_identifier(const char *name, int len)
 	return identifier;
 }
 
-tree current_context = NULL;
+union tree_node base = { .common = { .code = BLOCK_NODE } };
+
+tree current_context = &base;
 
 tree iter_context = NULL;
 
 void print_current_context(void)
 {
 	printf("Current context:\n");
-	print_ast(current_context, 0);
+	print_ast(current_context, 0, 1);
 }
 
 void start_context(void)
@@ -266,14 +317,15 @@ void start_function(tree decl)
 	}
 
 	emit_decl(decl);
+	current_function = decl;
 	start_block();
 
 	// Check if parameters are valid and add them to the block
 	for (tree iter = DECL_PARM_LIST(decl); iter != NULL; iter = TREE_CHAIN(iter)) {
-		if (TREE_CODE(iter) != PARM_DECL)
+		tree parm = TREE_TYPE(iter);
+		if (TREE_CODE(parm) != PARM_DECL)
 			errx(EXIT_FAILURE, "unexpected: non-parameter in parameter list");
 
-		tree parm = TREE_TYPE(iter);
 		if (DECL_NAME(parm) == NULL)
 			errx(EXIT_FAILURE, "Parameter without name");
 
@@ -747,10 +799,10 @@ tree build_mult_expr(enum tree_code code, tree left, tree right)
 {
 	tree ltype = TREE_TYPE(left);
 	tree rtype = TREE_TYPE(right);
-	if (!is_integer(ltype) || !is_real(ltype))
+	if (!is_integer(ltype) && !is_real(ltype))
 		errx(EXIT_FAILURE, "multiplying non-integer type");
 
-	if (!is_integer(rtype) || !is_real(rtype))
+	if (!is_integer(rtype) && !is_real(rtype))
 		errx(EXIT_FAILURE, "multiplying non-integer type");
 
 	if (is_real(ltype) || is_real(rtype)) {
@@ -1086,7 +1138,8 @@ tree end_while(tree body)
 	return node;
 }
 
-void start_do_while() {
+void start_do_while()
+{
 	tree node = new_node(DO_WHILE_STMT, NULL);
 	iter_context = chain_append(node, iter_context);
 }
@@ -1110,7 +1163,7 @@ tree build_continue(void)
 {
 	if (iter_context == NULL)
 		errx(EXIT_FAILURE, "Continue outside a loop");
-	tree node = new_node(CONTINUE_STMT, TREE_TYPE(iter_context));
+	tree node = new_node(CONTINUE_STMT, NULL);
 	return node;
 }
 
@@ -1118,7 +1171,7 @@ tree build_break(void)
 {
 	if (iter_context == NULL)
 		errx(EXIT_FAILURE, "Break outside a loop");
-	tree node = new_node(BREAK_STMT, TREE_TYPE(iter_context));
+	tree node = new_node(BREAK_STMT, NULL);
 	return node;
 }
 
@@ -1128,15 +1181,11 @@ tree build_return(tree expr)
 		errx(EXIT_FAILURE, "unexpected: return outside a function");
 
 	tree type = TREE_TYPE(current_function);
-	if (!valid_return_type(type)) {
-		printf("Return type: ");
-		print_type(type);
-		errx(EXIT_FAILURE, "invalid return type");
-	}
 	if (expr != NULL)
 		expr = implicit_cast(type, expr);
 
-	tree node = new_node(RETURN_STMT, expr);
+	tree node = new_node(RETURN_STMT, NULL);
+	EXPR_OPERAND(node, 0) = expr;
 	return node;
 }
 

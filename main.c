@@ -2,8 +2,7 @@
 #include "args.h"
 extern int yyparse(void);
 
-
-
+extern void print_current_context(void);
 
 int main(int argc, char *argv[])
 {
@@ -11,5 +10,6 @@ int main(int argc, char *argv[])
 	init_args(&args);
 	parse_args(argc, argv, &args);
 
-	return yyparse();
+	yyparse();
+	print_current_context();
 }

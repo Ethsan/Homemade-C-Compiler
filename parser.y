@@ -613,7 +613,7 @@ parameter_declaration
 	: declaration_specifiers declarator {
 		TREE_TYPE($2) = type_append(TREE_TYPE($2), $1);
 		TREE_CODE($2) = PARM_DECL;
-		$$ = $1;
+		$$ = $2;
 	}	
 	| declaration_specifiers abstract_declarator {
 		$2 = type_append($2, $1);
@@ -795,8 +795,7 @@ declaration_list
 		$$ = $1;
 	}
 	| declaration_list declaration {
-		chain_append($1, $2);
-		$$ = $1;
+		$$ = chain_append($1, $2);
 	}
 	;
 
@@ -805,8 +804,7 @@ statement_list
 		$$ = $1;
 	}
 	| statement_list statement {
-		chain_append($1, $2);
-		$$ = $1;
+		$$ = chain_append($1, $2);
 	}
 	;
 
@@ -894,8 +892,7 @@ function_definition
 		ERROR("declaration_list not implemented");
 	}
 	| declaration_specifiers declarator {
-		$<tree>$ = new_node(FUNCTION_DECL, $2);
-		type_append($2, $1);
+		$<tree>$ = type_append($2, $1);
 		start_function($<tree>$);
 	} compound_statement { 
 		end_function($4);
@@ -904,8 +901,7 @@ function_definition
 		ERROR("declaration_list not implemented");
 	}
 	| declarator {
-		type_append($1, new_node(INT_TYPE, NULL));
-		$<tree>$ = new_node(FUNCTION_DECL, $1);
+		$<tree>$ = type_append($1, new_node(INT_TYPE, NULL));
 		start_function($<tree>$);
 	} compound_statement {
 		end_function($3);
