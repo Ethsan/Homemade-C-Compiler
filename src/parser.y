@@ -69,7 +69,6 @@ extern int yylex(void);
 %type <tree> declaration_specifiers
 %type <tree> init_declarator_list
 %type <tree> init_declarator
-%type <misc> storage_class_specifier
 %type <tree> type_specifier
 %type <tree> struct_or_union_specifier
 %type <tree> struct_or_union
@@ -111,6 +110,8 @@ extern int yylex(void);
 
 %type <code> assignement_operator
 %type <code> unary_operator
+
+%type <misc> storage_class_specifier
 
 %right THEN ELSE
 
@@ -363,7 +364,6 @@ constant_expression
 		if (!is_constant($1)) {
 			ERROR("constant_expression must be constant");
 		}
-		$$ = $1;
 	}
 	;
 
@@ -375,11 +375,10 @@ declaration
 	}
 	| declaration_specifiers init_declarator_list SEMICOLON {
 		for (tree t = $2; t != NULL; ) {
-			type_append(TREE_TYPE(t), $1);
-			emit_decl(TREE_TYPE(t));
+			tree decl = build_decl(TREE_TYPE(t), $1);
+			emit_decl(decl);
 
 			tree next = TREE_CHAIN(t);
-			free(t);
 			t = next;
 		}
 	}
@@ -419,8 +418,7 @@ init_declarator
 		$$ = $1;
 	}
 	| declarator EQUAL initializer {
-		$$ = $1;
-		DECL_BODY($$) = $3;
+		$$ = build_init_decl($1, $3);
 	}
 	;
 
@@ -513,9 +511,7 @@ type_qualifier
 
 declarator
 	: pointer direct_declarator {
-		type_append($1, TREE_TYPE($2));
-		TREE_TYPE($2) = $1;
-		$$ = $2;
+		$$ = build_pointer_decl($2, $1);
 	}
 	| direct_declarator {
 		$$ = $1;
@@ -524,43 +520,23 @@ declarator
 
 direct_declarator
 	: IDENTIFIER {
-		$$ = new_node(VARIABLE_DECL, NULL);
-		DECL_NAME($$) = $1;
+		$$ = build_abstract_decl($1);
 	}
 	| LPAREN declarator RPAREN {
 		$$ = $2;
 	}
 	| direct_declarator LBRACKET RBRACKET {
-		TREE_TYPE($1) = new_node(ARRAY_TYPE, TREE_TYPE($1));
-		$$ = $1;
+		$$ = build_array_decl($1, NULL);
 	}
 	| direct_declarator LBRACKET constant_expression RBRACKET {
-		TREE_TYPE($1) = new_node(ARRAY_TYPE, TREE_TYPE($1)); /* TODO constant_expression */
-		$$ = $1;
+		$$ = build_array_decl($1, $3);
 	}
 	| direct_declarator LPAREN parameter_type_list RPAREN {
-		// check if variable is a function
-		if (TREE_CODE($1) == VARIABLE_DECL && TREE_TYPE($1) == NULL) {
-			TREE_CODE($1) = FUNCTION_DECL;
-			DECL_PARM_LIST($1) = $3;
-		} else {
-			tree func_type = new_node(FUNCTION_TYPE, TREE_TYPE($1));
-			TYPE_PARM_LIST(func_type) = $3;
-			TREE_TYPE($1) = func_type;
-		}
-		$$ = $1;
+		$$ = build_function_decl($1, $3);
 	}
 	| direct_declarator LPAREN RPAREN {
-		// check if variable is a function
-		if (TREE_CODE($1) == VARIABLE_DECL && TREE_TYPE($1) == NULL) {
-			TREE_CODE($1) = FUNCTION_DECL;
-		} else {
-			tree func_type = new_node(FUNCTION_TYPE, TREE_TYPE($1));
-			TREE_TYPE($1) = func_type;
-		}
-		$$ = $1;
+		$$ = build_function_decl($1, NULL);
 	}
-			
 	| direct_declarator LPAREN identifier_list RPAREN {
 		ERROR("identifier_list not implemented");
 	}
@@ -568,10 +544,10 @@ direct_declarator
 
 pointer
 	: STAR {
-		$$ = new_node(PTR_TYPE, NULL);
+		$$ = build_pointer_type(NULL);
 	}
 	| STAR pointer {
-		$$ = new_node(PTR_TYPE, $2);
+		$$ = build_pointer_type($2);
 	}
 	| STAR type_qualifier_list {
 		ERROR("type_qualifier_list not implemented");
@@ -611,16 +587,13 @@ parameter_list
 
 parameter_declaration
 	: declaration_specifiers declarator {
-		TREE_TYPE($2) = type_append(TREE_TYPE($2), $1);
-		TREE_CODE($2) = PARM_DECL;
-		$$ = $2;
+		$$ = build_parm_decl($2, $1);
 	}	
 	| declaration_specifiers abstract_declarator {
-		$2 = type_append($2, $1);
-		$$ = new_node(PARM_DECL, $2);
+		$$ = build_parm_decl($2, $1);
 	}
 	| declaration_specifiers {
-		$$ = new_node(PARM_DECL, $1);
+		$$ = build_parm_decl(NULL, $1);
 	}
 	;
 
@@ -628,13 +601,10 @@ parameter_declaration
 
 type_name
 	: specifier_qualifier_list abstract_declarator {
-		type_append($1, TREE_TYPE($2));
-		TREE_TYPE($2) = $1;
-		$$ = $2;
+		$$ = build_decl($2, $1);
 	}
 	| specifier_qualifier_list {
-		$$ = new_node(TYPE_DECL, NULL);
-		TREE_TYPE($$) = $1;
+		$$ = $1;
 	}
 	;
 
@@ -643,9 +613,7 @@ abstract_declarator
 		$$ = $1;
 	}
 	| pointer direct_abstract_declarator {
-		type_append($1, TREE_TYPE($2));
-		TREE_TYPE($2) = $1;
-		$$ = $2;
+		$$ = build_pointer_decl($2, $1);
 	}
 	| direct_abstract_declarator {
 		$$ = $1;
@@ -658,29 +626,25 @@ direct_abstract_declarator
 		$$ = $2;
 	}
 	| LBRACKET RBRACKET {
-		$$ = new_node(ARRAY_TYPE, NULL);
+		$$ = build_array_decl(build_abstract_decl(NULL), NULL);
 	}
 	| LBRACKET constant_expression RBRACKET {
-		$$ = new_node(ARRAY_TYPE, NULL); /* TODO constant_expression */
+		$$ = build_array_decl(build_abstract_decl(NULL), $2);
 	}
 	| direct_abstract_declarator LBRACKET RBRACKET {
-		TREE_TYPE($1) = new_node(ARRAY_TYPE, TREE_TYPE($1));
-		$$ = $1;
+		$$ = build_array_decl($1, NULL);
 	}
 	| direct_abstract_declarator LBRACKET constant_expression RBRACKET {
-		TREE_TYPE($1) = new_node(ARRAY_TYPE, TREE_TYPE($1)); /* TODO constant_expression */
-		$$ = $1;
+		$$ = build_array_decl($1, $3);
 	}
 	| LPAREN parameter_type_list RPAREN  {
-		$$ = new_node(FUNCTION_TYPE, NULL);
-		TYPE_PARM_LIST($$) = $2;
+		$$ = build_function_decl(build_abstract_decl(NULL), $2);
 	}
 	| direct_abstract_declarator LPAREN RPAREN {
-		$$ = new_node(FUNCTION_TYPE, TREE_TYPE($1));
+		$$ = build_function_decl($1, NULL);
 	}
 	| direct_abstract_declarator LPAREN parameter_type_list RPAREN {
-		$$ = new_node(FUNCTION_TYPE, TREE_TYPE($1));
-		TYPE_PARM_LIST($$) = $3;
+		$$ = build_function_decl($1, $3);
 	}
 	;
 
@@ -892,7 +856,7 @@ function_definition
 		ERROR("declaration_list not implemented");
 	}
 	| declaration_specifiers declarator {
-		$<tree>$ = type_append($2, $1);
+		$<tree>$ = build_decl($2, $1);
 		start_function($<tree>$);
 	} compound_statement { 
 		end_function($4);
@@ -901,7 +865,7 @@ function_definition
 		ERROR("declaration_list not implemented");
 	}
 	| declarator {
-		$<tree>$ = type_append($1, new_node(INT_TYPE, NULL));
+		$<tree>$ = build_decl($1, new_node(INT_TYPE, NULL));
 		start_function($<tree>$);
 	} compound_statement {
 		end_function($3);

@@ -35,6 +35,7 @@ typedef union tree_node *tree;
 	X(TYPE_DECL)                           \
 	X(PARM_DECL)                           \
 	X(LABEL_DECL)                          \
+	X(ABSTRACT_DECL)                       \
                                                \
 	/* Types (tree_type)*/                 \
 	X(VOID_TYPE)                           \
@@ -152,6 +153,7 @@ struct tree_common {
 
 	tree chain;
 	tree type;
+	tree _alloc_chain;
 
 	uint has_side_effects : 1;
 	uint is_constant : 1;
@@ -236,14 +238,17 @@ struct tree_type {
 
 #define EXPR_OPERAND(node, idx) ((node)->expr.operands[idx])
 #define EXPR_VALUE(node) ((node)->expr.value)
+#define EXPR_STEP(node) ((node)->expr.step)
 
 struct tree_expr {
 	struct tree_common common;
 
 	tree operands[4];
 
+	// if constant
+	tree value;
 	// for incr and decr
-	uint64_t value;
+	uint64_t step;
 };
 
 #define BLOCK_VARS(node) ((node)->block.vars)
@@ -317,8 +322,6 @@ tree new_node(enum tree_code code, tree type);
 
 tree chain_append(tree chain, tree node);
 
-tree type_append(tree node, tree type);
-
 tree get_identifier(const char *name, int len);
 
 tree parse_integer(const char *value, int len);
@@ -382,3 +385,19 @@ tree build_default(tree stmt);
 tree build_goto(tree label);
 
 tree build_call(tree func, tree args);
+
+tree build_decl(tree abstract_decl, tree type);
+
+tree build_abstract_decl(tree name);
+
+tree build_init_decl(tree abstract_decl, tree init);
+
+tree build_array_decl(tree abstract_decl, tree size);
+
+tree build_pointer_type(tree type);
+
+tree build_pointer_decl(tree abstract_decl, tree type);
+
+tree build_function_decl(tree abstract_decl, tree parm_list);
+
+tree build_parm_decl(tree abstract_decl, tree type);

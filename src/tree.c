@@ -91,7 +91,7 @@ void print_type(tree type)
 		printf("float");
 		break;
 	case ARRAY_TYPE:
-		printf("array of ");
+		printf("array (%d) of ", TYPE_SIZE(type));
 		print_type(TREE_TYPE(type));
 		break;
 	case FUNCTION_TYPE:
@@ -259,6 +259,8 @@ tree emit_decl(tree decl)
 	if (get_decl_in(id, current_context) != NULL)
 		errx(EXIT_FAILURE, "redefinition of '%.*s'", ID_LEN(id), ID_NAME(id));
 
+	// Check if init is valid
+
 	// Add to current context
 	TREE_CHAIN(decl) = BLOCK_VARS(current_context);
 	BLOCK_VARS(current_context) = decl;
@@ -295,7 +297,7 @@ int valid_return_type(tree type)
 {
 	if (type == NULL)
 		return 0;
-	if (TREE_CODE(type) == ARRAY_TYPE || TREE_CODE(type) == FUNCTION_TYPE || TREE_CODE(type) == STRUCT_TYPE)
+	if (TREE_CODE(type) == ARRAY_TYPE)
 		return 0;
 	return 1;
 }
@@ -365,48 +367,38 @@ tree type_append(tree node, tree type)
 	tree current = node;
 	while (TREE_TYPE(current) != NULL)
 		current = TREE_TYPE(current);
+
 	TREE_TYPE(current) = type;
 	return node;
 }
 
-tree freed_node = NULL;
+tree last_allocated_node;
 
 tree new_node(enum tree_code code, tree type)
 {
 	tree node;
-	if (freed_node != NULL) {
-		node = freed_node;
-		freed_node = TREE_CHAIN(freed_node);
-	} else {
-		node = malloc(sizeof(union tree_node));
-		if (node == NULL)
-			err(EXIT_FAILURE, "malloc");
-	}
+	node = malloc(sizeof(union tree_node));
+	if (node == NULL)
+		err(EXIT_FAILURE, "malloc");
 
 	memset(node, 0, sizeof(union tree_node));
 	TREE_CODE(node) = code;
 	TREE_TYPE(node) = type;
 
+	node->common._alloc_chain = last_allocated_node;
+	last_allocated_node = node;
+
 	return node;
 }
 
-tree free_one_node(tree node)
+tree free_tree(tree node)
 {
 	if (node == NULL)
 		return NULL;
-	tree chain = TREE_CHAIN(node);
-	TREE_CHAIN(node) = freed_node;
-	freed_node = node;
-	return chain;
-}
 
-void flush_freed_nodes(void)
-{
-	while (freed_node != NULL) {
-		tree tmp = freed_node;
-		freed_node = TREE_CHAIN(freed_node);
-		free(tmp);
-	}
+	tree chain = node->common._alloc_chain;
+	free(node);
+	return chain;
 }
 
 tree new_integer(uint64_t value)
@@ -734,7 +726,7 @@ tree build_incr_expr(enum tree_code code, tree expr)
 
 	tree node = new_node(code, type);
 	EXPR_OPERAND(node, 0) = expr;
-	EXPR_VALUE(node) = get_type_size(type);
+	EXPR_STEP(node) = get_type_size(type);
 
 	if (TREE_IS_CONSTANT(expr))
 		TREE_SET_CONSTANT(node);
@@ -1132,9 +1124,7 @@ tree end_while(tree body)
 		errx(EXIT_FAILURE, "unexpected: end of while outside a while");
 
 	ITER_BODY(node) = body;
-	tree tmp = iter_context;
 	iter_context = TREE_CHAIN(iter_context);
-	free_one_node(tmp);
 	return node;
 }
 
@@ -1221,4 +1211,116 @@ tree build_sizeof(tree type)
 	INT_VALUE(node) = get_type_size(type);
 	TREE_SET_CONSTANT(node);
 	return node;
+}
+
+// For now operation are not supported
+tree evaluate(tree expr)
+{
+	if (!is_constant(expr))
+		errx(EXIT_FAILURE, "Can't evaluate non-constant expression");
+
+	switch (TREE_CODE(expr)) {
+	case STRING_CST:
+	case REAL_CST:
+	case INTEGER_CST:
+		return expr;
+	default:
+		errx(EXIT_FAILURE, "Can't evaluate expression");
+	}
+}
+
+tree build_abstract_decl(tree name)
+{
+	tree node = new_node(VARIABLE_DECL, NULL);
+	DECL_NAME(node) = name;
+
+	return node;
+}
+
+tree build_init_decl(tree abstract, tree init)
+{
+	if (abstract == NULL)
+		errx(EXIT_FAILURE, "Unexpected: abstract declaration is NULL");
+
+	DECL_BODY(abstract) = init;
+
+	return abstract;
+}
+
+tree build_array_decl(tree abstract, tree size)
+{
+	if (size == NULL)
+		errx(EXIT_FAILURE, "Array size must be specified");
+	if (TREE_CODE(size) != INTEGER_CST)
+		errx(EXIT_FAILURE, "Array size must be an integer constant");
+
+	tree array = new_node(ARRAY_TYPE, NULL);
+	TYPE_SIZE(array) = INT_VALUE(size);
+
+	tree type = type_append(TREE_TYPE(abstract), array);
+	TREE_TYPE(abstract) = type;
+
+	return abstract;
+}
+
+tree build_function_decl(tree abstract, tree parm_list)
+{
+	if (abstract == NULL)
+		errx(EXIT_FAILURE, "Unexpected: abstract declaration is NULL");
+
+	// TODO check parameter list
+	if (TREE_CODE(abstract) == VARIABLE_DECL && TREE_TYPE(abstract) == NULL) {
+		TREE_CODE(abstract) = FUNCTION_DECL;
+		DECL_PARM_LIST(abstract) = parm_list;
+		return abstract;
+	}
+
+	tree function = new_node(FUNCTION_TYPE, NULL);
+	TYPE_PARM_LIST(function) = parm_list;
+
+	tree type = type_append(TREE_TYPE(abstract), function);
+	TREE_TYPE(abstract) = type;
+
+	return abstract;
+}
+
+tree build_pointer_type(tree type)
+{
+	return new_node(PTR_TYPE, type);
+}
+
+tree build_pointer_decl(tree abstract, tree type)
+{
+	if (abstract == NULL)
+		errx(EXIT_FAILURE, "%s Unexpected: abstract declaration is NULL", __func__);
+
+	// For pointer the logic is a little different
+	type = type_append(type, TREE_TYPE(abstract));
+	TREE_TYPE(abstract) = type;
+
+	return abstract;
+}
+
+tree build_parm_decl(tree abstract, tree type)
+{
+	if (abstract == NULL)
+		abstract = new_node(PARM_DECL, NULL);
+
+	TREE_CODE(abstract) = PARM_DECL;
+
+	type = type_append(TREE_TYPE(abstract), type);
+	TREE_TYPE(abstract) = type;
+
+	return abstract;
+}
+
+tree build_decl(tree abstract, tree type)
+{
+	if (abstract == NULL)
+		errx(EXIT_FAILURE, "Unexpected: abstract declaration is NULL");
+
+	type = type_append(TREE_TYPE(abstract), type);
+	TREE_TYPE(abstract) = type;
+
+	return abstract;
 }
