@@ -721,12 +721,15 @@ uint64_t get_type_size(tree type)
 tree build_incr_expr(enum tree_code code, tree expr)
 {
 	tree type = TREE_TYPE(expr);
-	if (TREE_CODE(type) != INT_TYPE)
-		errx(EXIT_FAILURE, "incrementing non-integer type");
 
 	tree node = new_node(code, type);
 	EXPR_OPERAND(node, 0) = expr;
-	EXPR_STEP(node) = get_type_size(type);
+	if (is_ptr(type))
+		EXPR_STEP(node) = get_type_size(TREE_TYPE(type));
+	else if (is_integer(type) || is_real(type))
+		EXPR_STEP(node) = 1;
+	else
+		errx(EXIT_FAILURE, "unexpected: incrementing non-pointer type");
 
 	if (TREE_IS_CONSTANT(expr))
 		TREE_SET_CONSTANT(node);
@@ -755,6 +758,11 @@ tree build_unary_expr(enum tree_code code, tree expr)
 	case LOG_NOT_EXPR:
 		node = new_node(LOG_NOT_EXPR, TREE_TYPE(expr));
 		break;
+	case PRE_INCR_EXPR:
+	case POST_INCR_EXPR:
+	case PRE_DECR_EXPR:
+	case POST_DECR_EXPR:
+		return build_incr_expr(code, expr);
 	default:
 		errx(EXIT_FAILURE, "unexpected: unknown unary expression");
 	}

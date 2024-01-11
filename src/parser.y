@@ -44,7 +44,7 @@ extern int yylex(void);
 %token NOT_EQUAL EQUAL_EQUAL STAR_EQUAL SLASH_EQUAL
 %token PERCENT_EQUAL PLUS_EQUAL MINUS_EQUAL LSHIFT_EQUAL
 %token RSHIFT_EQUAL AND_EQUAL XOR_EQUAL OR_EQUAL
-%token PLUS_PLUS MINUS_MINUS COLON QUESTION OR_OR AND_AND
+%token COLON QUESTION OR_OR AND_AND
 %token OR XOR ELLIPSIS SEMICOLON
 
 %type <tree> primary_expression
@@ -164,10 +164,10 @@ postfix_expression
 
 unary_expression
 	: postfix_expression
-	| PLUS_PLUS unary_expression {
+	| INCREMENT unary_expression {
 		$$ = build_unary_expr(PRE_INCR_EXPR, $2);
 	}
-	| MINUS_MINUS unary_expression {
+	| DECREMENT unary_expression {
 		$$ = build_unary_expr(PRE_DECR_EXPR, $2);
 	}
 	| unary_operator cast_expression {
@@ -842,6 +842,9 @@ jump_statement
 translation_unit
 	: external_declaration 
 	| translation_unit external_declaration
+	| error {
+		print_current_context();
+	}
 	;
 
 external_declaration
@@ -883,5 +886,5 @@ argument_expression_list
 %%
 
 void yyerror(const char *msg) {
-	fprintf(stderr, "Error: %s\n", msg);
+	fprintf(stderr, "Error at line %d: %s\n",yylloc.first_line, msg);
 }
