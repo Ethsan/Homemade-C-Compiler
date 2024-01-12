@@ -35,7 +35,7 @@ test_runner: $(TEST_OBJ)
 compile_commands.json: clean
 	bear -- make all
 
-.PHONY: clean format test all 
+.PHONY: clean format test all help
 
 all: $(OUT) test_runner
 
@@ -47,3 +47,16 @@ clean:
 
 format:
 	find $(SRC_DIR) $(TEST_DIR) -iname "*.h" -o -iname "*.c" | xargs clang-format --verbose -i
+
+help:
+	@echo "Available rules:"
+	@echo
+	@echo "  all: Build the main program and the test runner."
+	@echo "  $(OUT): Build the main program."
+	@echo "  test_runner: Build the test runner."
+	@echo "  compile_commands.json: Generate a compile_commands.json file."
+	@echo "  clean: Remove generated files."
+	@echo "  format: Format the source code."
+	@echo "  test: Run the tests."
+	@echo "  help: Show this help message."
+	@echo
