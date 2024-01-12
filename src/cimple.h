@@ -60,8 +60,13 @@ struct cimple_function {
 
 	uint32_t size;
 	uint32_t capacity;
+<<<<<<< Updated upstream
 
 	struct cimple_instr *instrs;
+=======
+	uint32_t nb_param;
+	struct cimple_instr instrs[];
+>>>>>>> Stashed changes
 };
 
 struct cimple_string {
