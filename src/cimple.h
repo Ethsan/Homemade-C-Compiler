@@ -24,6 +24,8 @@ enum cimple_op {
 	OP_LESS_EQ, // <=
 	OP_EQ_EQ, // ==
 	OP_NOT_EQ, // !=
+	OP_CONVERT_TO_INT,
+	OP_CONVERT_TO_FLOAT,
 
 	OP_SYSCALL,
 	OP_CALL,
