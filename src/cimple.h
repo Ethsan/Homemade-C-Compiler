@@ -39,7 +39,7 @@ enum cimple_scope {
 	CIMPLE_GLOBAL,
 	CIMPLE_ARG,
 	CIMPLE_CONST,
-	CIMPLE_NO_SCOPE,
+	CIMPLE_UID,
 };
 
 struct cimple_instr {
