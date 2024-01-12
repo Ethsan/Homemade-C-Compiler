@@ -30,7 +30,8 @@ enum cimple_op {
 	OP_PARAM,
 	OP_RETURN,
 	OP_FUNC, // déclaration de fonction (OP_FUNC, _, nombre de paramètres, nom de la fonction)
-
+	OP_LD,
+	OP_ST,
 };
 
 enum cimple_scope {
@@ -38,6 +39,7 @@ enum cimple_scope {
 	CIMPLE_GLOBAL,
 	CIMPLE_ARG,
 	CIMPLE_CONST,
+	CIMPLE_NO_SCOPE,
 };
 
 struct cimple_instr {
@@ -60,13 +62,8 @@ struct cimple_function {
 
 	uint32_t size;
 	uint32_t capacity;
-<<<<<<< Updated upstream
 
 	struct cimple_instr *instrs;
-=======
-	uint32_t nb_param;
-	struct cimple_instr instrs[];
->>>>>>> Stashed changes
 };
 
 struct cimple_string {
