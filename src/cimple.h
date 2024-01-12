@@ -42,7 +42,9 @@ enum cimple_scope {
 
 struct cimple_instr {
 	enum cimple_op op;
-	enum cimple_scope scope;
+	enum cimple_scope scope_ret;
+	enum cimple_scope scope_1;
+	enum cimple_scope scope_2;
 
 	uint32_t uid;
 
@@ -71,8 +73,20 @@ struct cimple_string {
 
 struct cimple_program {
 	uint32_t decl_size;
-	struct cimple_string *decls;
+	struct cimple_string **decls;
 
 	uint32_t func_size;
-	struct cimple_function *funcs;
+	struct cimple_function **funcs;
 };
+
+struct cimple_program *cimple_new_program(void);
+
+void cimple_free_program(struct cimple_program *prog);
+
+void cimple_push_instr(struct cimple_function *func, struct cimple_instr instr);
+
+struct cimple_function *cimple_new_function(struct cimple_program *prog);
+
+void cimple_new_string(struct cimple_program *prog, const char *str);
+
+void cimple_dump_program(struct cimple_program *prog);
