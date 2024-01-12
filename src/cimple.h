@@ -61,7 +61,7 @@ struct cimple_function {
 	uint32_t size;
 	uint32_t capacity;
 
-	struct cimple_instr instrs[];
+	struct cimple_instr *instrs;
 };
 
 struct cimple_string {
@@ -73,10 +73,10 @@ struct cimple_string {
 
 struct cimple_program {
 	uint32_t decl_size;
-	struct cimple_string **decls;
+	struct cimple_string *decls;
 
 	uint32_t func_size;
-	struct cimple_function **funcs;
+	struct cimple_function *funcs;
 };
 
 struct cimple_program *cimple_new_program(void);
