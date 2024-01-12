@@ -68,7 +68,7 @@ struct cimple_string {
 	uint32_t uid;
 
 	uint32_t size;
-	char str[];
+	char *str;
 };
 
 struct cimple_program {
