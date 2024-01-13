@@ -13,6 +13,7 @@ enum cimple_op {
 	OP_AND,
 	OP_OR,
 	OP_NOT, // !
+	OP_XOR,
 
 	OP_ASSIGN,
 
@@ -26,7 +27,7 @@ enum cimple_op {
 	OP_NOT_EQ, // !=
 	OP_CONVERT_TO_INT,
 	OP_CONVERT_TO_FLOAT,
-	
+
 	OP_CONVERT_TRUTH, // convertit en 0 ou 1
 
 	OP_SYSCALL,
@@ -35,8 +36,8 @@ enum cimple_op {
 	OP_RETURN,
 	OP_FUNC, // déclaration de fonction (OP_FUNC, _, nombre de paramètres, nom de la fonction)
 	OP_LD,
-	OP_ST,
-};
+	OP_ST, // (OP_ST, address, uid, _)
+}; // 27 opérations
 
 enum cimple_scope {
 	CIMPLE_LOCAL,
