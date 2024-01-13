@@ -33,7 +33,7 @@ enum cimple_op {
 
 	OP_SYSCALL, // (OP_SYSCALL, numéro fonction, nombre de paramètres,var_retour)
 	OP_CALL, // (OP_CALL, numéro_fonction, nombre de paramètres, var_retour)
-	OP_PARAM, // (OP_PARAM, var, numéro du paramètre,_) )
+	OP_PARAM, // (OP_PARAM, var, numéro du paramètre,float ou non) )
 	OP_RETURN,
 	OP_FUNC, // déclaration de fonction (OP_FUNC, _, nombre de paramètres, nom de la fonction)
 	OP_LD,	// (OP_LD,address, _, uid)
@@ -45,7 +45,7 @@ enum cimple_op {
 
 enum cimple_scope {
 	CIMPLE_LOCAL,
-	CIMPLE_GLOBAL,
+	CIMPLE_TEXT,
 	CIMPLE_ARG,
 	CIMPLE_CONST,
 	CIMPLE_UID,
