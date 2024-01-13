@@ -38,7 +38,8 @@ enum cimple_op {
 	OP_FUNC, // déclaration de fonction (OP_FUNC, _, nombre de paramètres, nom de la fonction)
 	OP_LD,
 	OP_ST, // (OP_ST, address, uid, _)
-}; // 27 opérations
+	OP_ALLOC,
+};
 
 enum cimple_scope {
 	CIMPLE_LOCAL,
@@ -97,7 +98,7 @@ struct cimple_program *cimple_new_program(void);
 
 void cimple_free_program(struct cimple_program *prog);
 
-void cimple_push_instr(struct cimple_function *func, struct cimple_instr instr);
+int cimple_push_instr(struct cimple_function *func, struct cimple_instr instr);
 
 struct cimple_function *cimple_new_function(struct cimple_program *prog);
 
