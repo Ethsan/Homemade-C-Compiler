@@ -15,6 +15,7 @@ enum cimple_op {
 	OP_NOT, // !
 	OP_XOR,
 
+
 	OP_ASSIGN,
 
 	OP_GOTO,
@@ -25,10 +26,10 @@ enum cimple_op {
 	OP_LESS_EQ, // <=
 	OP_EQ_EQ, // ==
 	OP_NOT_EQ, // !=
-	OP_CONVERT_TO_INT,
-	OP_CONVERT_TO_FLOAT,
+	OP_CONVERT_TO_INT, //(OP_CONVERT_TO_INT, var_float, _, var_int)
+	OP_CONVERT_TO_FLOAT, //(OP_CONVERT_TO_FLOAT, var_int, _, var_float)
 
-	OP_CONVERT_TRUTH, // convertit en 0 ou 1
+	OP_CONVERT_BOOL, // convertit en 0 ou 1
 
 	OP_SYSCALL,
 	OP_CALL,
