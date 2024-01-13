@@ -323,6 +323,7 @@ void start_function(tree decl)
 	start_block();
 
 	// Check if parameters are valid and add them to the block
+	int i = 0;
 	for (tree iter = DECL_PARM_LIST(decl); iter != NULL; iter = TREE_CHAIN(iter)) {
 		tree parm = TREE_TYPE(iter);
 		if (TREE_CODE(parm) != PARM_DECL)
@@ -332,6 +333,7 @@ void start_function(tree decl)
 			errx(EXIT_FAILURE, "Parameter without name");
 
 		emit_decl(parm);
+		DECL_OFFSET(parm) = i++;
 	}
 }
 
@@ -701,40 +703,14 @@ tree get_base_type(tree type)
 	case VOID_TYPE:
 	case INT_TYPE:
 	case REAL_TYPE:
+	case STRUCT_TYPE:
 		return type;
 	case ARRAY_TYPE:
 		return get_base_type(TREE_TYPE(type));
 	case FUNCTION_TYPE:
-		return type;
-	case STRUCT_TYPE:
-		return type;
+		return new_node(PTR_TYPE, TREE_TYPE(type));
 	case PTR_TYPE:
 		return get_base_type(TREE_TYPE(type));
-	default:
-		errx(EXIT_FAILURE, "unexpected: unknown type");
-	}
-}
-
-uint64_t get_sizeof(tree type)
-{
-	if (type == NULL)
-		return 0;
-
-	switch (TREE_CODE(type)) {
-	case VOID_TYPE:
-		return 0;
-	case INT_TYPE:
-		return INT_TYPE_SIZE;
-	case REAL_TYPE:
-		return FLOAT_TYPE_SIZE;
-	case ARRAY_TYPE:
-		return TYPE_SIZE(type) * get_sizeof(TREE_TYPE(type));
-	case FUNCTION_TYPE:
-		return PTR_TYPE_SIZE;
-	case STRUCT_TYPE:
-		return TYPE_SIZE(type);
-	case PTR_TYPE:
-		return PTR_TYPE_SIZE;
 	default:
 		errx(EXIT_FAILURE, "unexpected: unknown type");
 	}
@@ -784,6 +760,7 @@ tree build_unary_expr(enum tree_code code, tree expr)
 	case POST_INCR_EXPR:
 	case PRE_DECR_EXPR:
 	case POST_DECR_EXPR:
+
 		return build_incr_expr(code, expr);
 	default:
 		errx(EXIT_FAILURE, "unexpected: unknown unary expression");

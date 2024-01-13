@@ -211,6 +211,8 @@ struct tree_string {
 #define DECL_PARM_LIST(node) ((node)->decl.parm_list)
 #define DECL_BODY(node) ((node)->decl.body)
 
+#define DECL_OFFSET(node) ((node)->decl.offset)
+
 struct tree_decl {
 	struct tree_common common;
 
@@ -220,6 +222,8 @@ struct tree_decl {
 	// for functions
 	tree parm_list;
 	tree body;
+	// for parms
+	uint offset;
 };
 
 #define TYPE_SIZE(node) ((node)->type.size)
@@ -404,8 +408,12 @@ tree build_parm_decl(tree abstract_decl, tree type);
 
 void print_current_context(void);
 
+int is_real(tree type);
+
 uint64_t get_sizeof(tree type);
 
 tree get_base_type(tree type);
 
 int is_real(tree type);
+
+int get_array_len(tree type);
