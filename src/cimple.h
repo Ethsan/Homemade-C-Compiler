@@ -24,21 +24,23 @@ enum cimple_op {
 	OP_LESS, // <
 	OP_GREATER_EQ, // >=
 	OP_LESS_EQ, // <=
-	OP_EQ_EQ, // ==
+	OP_EQ_EQ, // == 
 	OP_NOT_EQ, // !=
 	OP_CONVERT_TO_INT, //(OP_CONVERT_TO_INT, var_float, _, var_int)
 	OP_CONVERT_TO_FLOAT, //(OP_CONVERT_TO_FLOAT, var_int, _, var_float)
 
 	OP_CONVERT_BOOL, // convertit en 0 ou 1
 
-	OP_SYSCALL,
-	OP_CALL,
-	OP_PARAM,
+	OP_SYSCALL, // (OP_SYSCALL, numéro fonction, nombre de paramètres,var_retour)
+	OP_CALL, // (OP_CALL, numéro_fonction, nombre de paramètres, var_retour)
+	OP_PARAM, // (OP_PARAM, var, numéro du paramètre,_) )
 	OP_RETURN,
 	OP_FUNC, // déclaration de fonction (OP_FUNC, _, nombre de paramètres, nom de la fonction)
-	OP_LD,
+	OP_LD,	// (OP_LD,address, _, uid)
 	OP_ST, // (OP_ST, address, uid, _)
 	OP_ALLOC,
+	OP_FREE,
+
 };
 
 enum cimple_scope {
