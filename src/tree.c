@@ -695,6 +695,28 @@ tree build_call(tree expr, tree arg_list)
 	return node;
 }
 
+uint64_t get_sizeof(tree type)
+{
+	if (type == NULL)
+		return 0;
+	switch (TREE_CODE(type)) {
+	case VOID_TYPE:
+		return 0;
+	case INT_TYPE:
+	case REAL_TYPE:
+		return 4;
+	case STRUCT_TYPE:
+		errx(EXIT_FAILURE, "unexpected: unknown type");
+	case ARRAY_TYPE:
+		return TYPE_SIZE(type) * get_sizeof(TREE_TYPE(type));
+	case FUNCTION_TYPE:
+	case PTR_TYPE:
+		return PTR_TYPE_SIZE;
+	default:
+		errx(EXIT_FAILURE, "unexpected: unknown type");
+	}
+}
+
 tree get_base_type(tree type)
 {
 	if (type == NULL)

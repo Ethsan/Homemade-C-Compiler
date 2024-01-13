@@ -42,6 +42,7 @@ enum cimple_op {
 };
 
 enum cimple_scope {
+	CIMPLE_NONE,
 	CIMPLE_LOCAL,
 	CIMPLE_TEXT,
 	CIMPLE_ARG,

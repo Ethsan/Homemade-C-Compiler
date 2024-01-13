@@ -2,10 +2,13 @@
 #include "cimple.h"
 
 #include <err.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // Use a program counter to generate unique ID for operation
 uint pc = 0;
+
+tree current_func = NULL;
 
 // Use a stack to keep track of temporaries
 struct {
@@ -43,6 +46,17 @@ union s {
 	uint32_t u;
 	float f;
 };
+
+uint get_parm_idx(tree parm)
+{
+	int idx = 0;
+	for (tree iter = DECL_PARM_LIST(current_func); iter != NULL; iter = TREE_CHAIN(iter)) {
+		if (TREE_TYPE(iter) == parm)
+			return idx;
+		idx++;
+	}
+	return UINT32_MAX;
+}
 
 void cimplify_block(struct cimple_function *func, tree block);
 
@@ -105,9 +119,12 @@ void cimplify_stmt(struct cimple_function *func, tree stmt)
 	case RETURN_STMT:
 		cimplify_return(func, stmt);
 		break;
-	default:
-		cimplify_expr(func, stmt, UINT32_MAX);
+	default: {
+		uint ret = push_anon_reg();
+		cimplify_expr(func, stmt, ret);
+		pop_reg();
 		break;
+	}
 	}
 }
 
@@ -210,6 +227,22 @@ void cimplify_assign_expr(struct cimple_function *func, tree to, uint from)
 		cimple_push_instr(func, instr);
 		break;
 	}
+	case PARM_DECL: {
+		uint idx = get_parm_idx(to);
+		if (idx == UINT32_MAX)
+			errx(EXIT_FAILURE, "cimplify_assign: unknown parameter");
+		struct cimple_instr instr = {
+			.op = OP_ASSIGN,
+			.uid = pc++,
+			.scope_ret = CIMPLE_ARG,
+			.ret = idx,
+			.scope_1 = CIMPLE_LOCAL,
+			.arg1 = from,
+			.is_float = is_float,
+		};
+		cimple_push_instr(func, instr);
+		break;
+	}
 	case INDIRECT_REF: {
 		uint reg = push_anon_reg();
 		cimplify_expr(func, EXPR_OPERAND(to, 0), reg);
@@ -245,8 +278,8 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.uid = pc++,
 			.scope_ret = CIMPLE_LOCAL,
 			.ret = ret,
-			.scope_2 = CIMPLE_CONST,
-			.arg2 = INT_VALUE(expr),
+			.scope_1 = CIMPLE_CONST,
+			.arg1 = INT_VALUE(expr),
 		};
 		cimple_push_instr(func, instr);
 		break;
@@ -257,8 +290,8 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.uid = pc++,
 			.scope_ret = CIMPLE_LOCAL,
 			.ret = ret,
-			.scope_2 = CIMPLE_CONST,
-			.arg2 = REAL_VALUE(expr),
+			.scope_1 = CIMPLE_CONST,
+			.arg1 = REAL_VALUE(expr),
 			.is_float = 1,
 		};
 		cimple_push_instr(func, instr);
@@ -290,7 +323,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.scope_ret = CIMPLE_LOCAL,
 			.ret = ret,
 			.scope_1 = CIMPLE_LOCAL,
-			.arg1 = reg,
+			.arg1 = ret,
 			.scope_2 = CIMPLE_LOCAL,
 			.arg2 = reg,
 
@@ -622,10 +655,12 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			depth++;
 		}
 		uint regs[depth];
+		uint is_floats[depth];
 		int i = 0;
 		for (tree iter = parm_list; iter != NULL; iter = TREE_CHAIN(iter)) {
 			regs[i] = push_anon_reg();
 			cimplify_expr(func, TREE_TYPE(iter), regs[i]);
+			is_floats[i] = is_real(TREE_TYPE(iter));
 			i++;
 		}
 		for (int i = depth - 1; i >= 0; i--) {
@@ -634,6 +669,8 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 				.uid = pc++,
 				.scope_1 = CIMPLE_LOCAL,
 				.arg1 = regs[i],
+
+				.is_float = is_floats[i],
 			};
 			cimple_push_instr(func, instr);
 			pop_reg();
@@ -649,10 +686,41 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.scope_1 = CIMPLE_UID,
 			.arg1 = DECL_UID(decl),
 		};
-		cimple_push_instr(decl, instr);
-		pop_reg();
+		cimple_push_instr(func, instr);
 		break;
 	}
+	case VARIABLE_DECL: {
+		struct cimple_instr instr = {
+			.op = OP_ASSIGN,
+			.uid = pc++,
+			.scope_ret = CIMPLE_LOCAL,
+			.ret = ret,
+			.scope_1 = CIMPLE_CONST,
+			.arg1 = get_named_reg(DECL_UID(expr)),
+			.is_float = is_float,
+		};
+		cimple_push_instr(func, instr);
+		break;
+	}
+	case PARM_DECL: {
+		uint idx = get_parm_idx(expr);
+		if (idx == UINT32_MAX)
+			errx(EXIT_FAILURE, "cimplify_expr: unknown parameter");
+		struct cimple_instr instr = {
+			.op = OP_ASSIGN,
+			.uid = pc++,
+			.scope_ret = CIMPLE_LOCAL,
+			.ret = ret,
+			.scope_1 = CIMPLE_ARG,
+			.arg1 = idx,
+			.is_float = is_float,
+		};
+		cimple_push_instr(func, instr);
+		break;
+	}
+
+	default:
+		errx(EXIT_FAILURE, "cimplify_expr: unknown expression %s", tree_code_name(TREE_CODE(expr)));
 	}
 }
 
@@ -789,9 +857,10 @@ void cimplify_if(struct cimple_function *func, tree stmt)
 			.scope_1 = CIMPLE_UID,
 			.arg1 = 0, // Not defined yet
 		};
+		func->instrs[cond_idx].ret = pc;
 		int jmp_idx = cimple_push_instr(func, jmp_instr);
 		cimplify_stmt(func, els);
-		func->instrs[jmp_idx].ret = pc;
+		func->instrs[jmp_idx].arg1 = pc;
 	}
 }
 
@@ -931,8 +1000,8 @@ void cimplify_var_decl(struct cimple_function *func, tree var)
 		.uid = pc++,
 		.scope_ret = CIMPLE_LOCAL,
 		.ret = push_named_reg(DECL_UID(var)),
-		.scope_2 = CIMPLE_CONST,
-		.arg2 = 0,
+		.scope_1 = CIMPLE_CONST,
+		.arg1 = 0,
 		.is_float = is_float,
 	};
 	cimple_push_instr(func, init);
@@ -987,6 +1056,7 @@ void cimplify_function(struct cimple_program *prog, tree func)
 
 	pc = 0;
 	stack.off = 0;
+	current_func = func;
 
 	struct cimple_function *cfunc = cimple_new_function(prog);
 	tree block = DECL_BODY(func);
@@ -1009,7 +1079,7 @@ struct cimple_program *cimplify(tree root)
 	struct cimple_program *prog = cimple_new_program();
 
 	for (tree var = BLOCK_VARS(root); var != NULL; var = TREE_CHAIN(var)) {
-		if (TREE_CODE(var) != VARIABLE_DECL)
+		if (TREE_CODE(var) == VARIABLE_DECL)
 			continue;
 		if (TREE_CODE(var) == FUNCTION_DECL)
 			cimplify_function(prog, var);

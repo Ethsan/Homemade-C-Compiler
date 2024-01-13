@@ -46,7 +46,6 @@ int cimple_push_instr(struct cimple_function *func, struct cimple_instr instr)
 	int index = func->size++;
 	func->instrs[index] = instr;
 	return index;
-
 }
 
 struct cimple_function *cimple_new_function(struct cimple_program *prog)
@@ -77,6 +76,142 @@ void cimple_new_string(struct cimple_program *prog, const char *str)
 	new_str->str = strdup(str);
 }
 
+void cimple_print_reg(enum cimple_scope type, uint value)
+{
+	switch (type) {
+	case CIMPLE_TEXT:
+		printf("T%u", value);
+		break;
+	case CIMPLE_LOCAL:
+		printf("L%u", value);
+		break;
+	case CIMPLE_ARG:
+		printf("A%u", value);
+		break;
+	case CIMPLE_CONST:
+		printf("%u", value);
+		break;
+	case CIMPLE_UID:
+		printf("<%u>", value);
+		break;
+	default:
+		printf("NULL");
+		break;
+	}
+}
+
+void cimple_print_op(enum cimple_op op)
+{
+	switch (op) {
+	case OP_ADD:
+		printf("ADD");
+		break;
+	case OP_SUB:
+		printf("SUB");
+		break;
+	case OP_MUL:
+		printf("MUL");
+		break;
+	case OP_DIV:
+		printf("DIV");
+		break;
+	case OP_MOD:
+		printf("MOD");
+		break;
+	case OP_NEG:
+		printf("NEG");
+		break;
+	case OP_AND:
+		printf("AND");
+		break;
+	case OP_OR:
+		printf("OR");
+		break;
+	case OP_NOT:
+		printf("NOT");
+		break;
+	case OP_XOR:
+		printf("XOR");
+		break;
+	case OP_ASSIGN:
+		printf("ASSIGN");
+		break;
+	case OP_GOTO:
+		printf("GOTO");
+		break;
+	case OP_GREATER:
+		printf("GREATER");
+		break;
+	case OP_LESS:
+		printf("LESS");
+		break;
+	case OP_GREATER_EQ:
+		printf("GREATER_EQ");
+		break;
+	case OP_LESS_EQ:
+		printf("LESS_EQ");
+		break;
+	case OP_EQ_EQ:
+		printf("EQ_EQ");
+		break;
+	case OP_NOT_EQ:
+		printf("NOT_EQ");
+		break;
+	case OP_CONVERT_TO_INT:
+		printf("CONVERT_TO_INT");
+		break;
+	case OP_CONVERT_TO_FLOAT:
+		printf("CONVERT_TO_FLOAT");
+		break;
+	case OP_CONVERT_BOOL:
+		printf("CONVERT_BOOL");
+		break;
+	case OP_SYSCALL:
+		printf("SYSCALL");
+		break;
+	case OP_CALL:
+		printf("CALL");
+		break;
+	case OP_PARAM:
+		printf("PARAM");
+		break;
+	case OP_RETURN:
+		printf("RETURN");
+		break;
+	case OP_FUNC:
+		printf("FUNC");
+		break;
+	case OP_LD:
+		printf("LD");
+		break;
+	case OP_ST:
+		printf("ST");
+		break;
+	case OP_ALLOC:
+		printf("ALLOC");
+		break;
+	case OP_FREE:
+		printf("FREE");
+		break;
+	default:
+		printf("NULL");
+		break;
+	}
+}
+
+void cimple_print_instr(struct cimple_instr *instr)
+{
+	printf("%d:\t", instr->uid);
+	cimple_print_op(instr->op);
+	printf("\t");
+	cimple_print_reg(instr->scope_ret, instr->ret);
+	printf("\t");
+	cimple_print_reg(instr->scope_1, instr->arg1);
+	printf("\t");
+	cimple_print_reg(instr->scope_2, instr->arg2);
+	printf("\n");
+}
+
 void cimple_dump_program(struct cimple_program *prog)
 {
 	printf("Program:\n");
@@ -85,9 +220,7 @@ void cimple_dump_program(struct cimple_program *prog)
 		printf("Function %u:\n", func->uid);
 		for (uint32_t j = 0; j < func->size; j++) {
 			struct cimple_instr *instr = &func->instrs[j];
-			printf("  Instruction %u: op=%d, scope_ret=%d, scope_1=%d, scope_2=%d, uid=%u, ret=%u, arg1=%u, arg2=%u, is_float=%u\n",
-			       j, instr->op, instr->scope_ret, instr->scope_1, instr->scope_2, instr->uid, instr->ret,
-			       instr->arg1, instr->arg2, instr->is_float);
+			cimple_print_instr(instr);
 		}
 	}
 }
