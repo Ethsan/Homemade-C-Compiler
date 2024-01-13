@@ -34,8 +34,7 @@ enum cimple_op {
 	OP_SYSCALL, // (OP_SYSCALL, numéro fonction, nombre de paramètres,var_retour)
 	OP_CALL, // (OP_CALL, numéro_fonction, nombre de paramètres, var_retour)
 	OP_PARAM, // (OP_PARAM, var, numéro du paramètre,float ou non) )
-	OP_RETURN,
-	OP_FUNC, // déclaration de fonction (OP_FUNC, _, nombre de paramètres, nom de la fonction)
+	OP_RETURN, // (OP_RETURN, var_retour, _, _)
 	OP_LD,	// (OP_LD,address, _, uid)
 	OP_ST, // (OP_ST, address, uid, _)
 	OP_ALLOC,
@@ -74,7 +73,7 @@ struct cimple_instr {
 
 struct cimple_function {
 	uint32_t uid;
-
+	int params_count;
 	uint32_t size;
 	uint32_t capacity;
 
