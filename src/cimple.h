@@ -33,7 +33,7 @@ enum cimple_op {
 
 	OP_SYSCALL, // (OP_SYSCALL, numéro fonction, nombre de paramètres,var_retour)
 	OP_CALL, // (OP_CALL, numéro_fonction, nombre de paramètres, var_retour)
-	OP_PARAM, // (OP_PARAM, var, numéro du paramètre,float ou non) )
+	OP_PARAM, // (OP_PARAM, var, numéro du paramètre,syscall ou non )
 	OP_RETURN, // (OP_RETURN, var_retour, _, _)
 	OP_LD,	// (OP_LD,address, _, uid)
 	OP_ST, // (OP_ST, address, uid, _)

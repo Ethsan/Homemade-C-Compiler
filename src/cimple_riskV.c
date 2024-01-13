@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -109,7 +110,7 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 // var t2 t3 utilisé pour les variable text et t2 t3 t4 ft1 ft2 ft3 pour les arguments
 // renvoie 1 si il y a besoin de rétablir les registres après (que pour les arguments > 8)
 int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst, int use_arg1, int use_arg2,
-		    int use_ret, register_manager *manager, FILE *fd)
+		    int use_ret, register_manager *manager, FILE *fp)
 {
 	int restore = 0;
 	if (instruction.is_float) {
@@ -131,15 +132,15 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 							fprintf(stderr, "Error: var not in float_use\n");
 							exit(1);
 						}
-						fprintf(fd, "fsw fs%d %d(t5)\n", register_var_push,
-							-addr_vat_to_push * 4);
+						fprintf(fp, "fsw fs%d %d(t5)\n", register_var_push,
+							-(addr_vat_to_push + 1) * 4);
 
 						if (!is_in(manager->float_used, manager->nb_float, instruction.arg1,
 							   &index)) {
 							fprintf(stderr, "Error: var not in float_use\n");
 							exit(1);
 						}
-						fprintf(fd, "flw fs%d %d(t5)\n", register_var_push, -index * 4);
+						fprintf(fp, "flw fs%d %d(t5)\n", register_var_push, -(index + 1) * 4);
 						sprintf(risc_inst->register_arg1, "fs%d", register_var_push);
 						manager->register_float[register_var_push] = instruction.arg1;
 					}
@@ -150,7 +151,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 					sprintf(risc_inst->register_arg1, "fa%d", instruction.arg1);
 				else
 					sprintf(risc_inst->register_arg1, "ft1");
-				fprintf(fd, "fsw ft1 %d(t6)\n", (instruction.arg1 - 8) * 4);
+				fprintf(fp, "fsw ft1 %d(t6)\n", (instruction.arg1 - 8) * 4);
 			}
 		}
 		if (use_arg2) {
@@ -171,15 +172,15 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 							fprintf(stderr, "Error: var not in float_use\n");
 							exit(1);
 						}
-						fprintf(fd, "fsw fs%d %d(t5)\n", register_var_push,
-							-addr_vat_to_push * 4);
+						fprintf(fp, "fsw fs%d %d(t5)\n", register_var_push,
+							-(addr_vat_to_push + 1) * 4);
 
 						if (!is_in(manager->float_used, manager->nb_float, instruction.arg2,
 							   &index)) {
 							fprintf(stderr, "Error: var not in float_use\n");
 							exit(1);
 						}
-						fprintf(fd, "flw fs%d %d(t5)\n", register_var_push, -index * 4);
+						fprintf(fp, "flw fs%d %d(t5)\n", register_var_push, -(index + 1) * 4);
 						sprintf(risc_inst->register_arg2, "fs%d", register_var_push);
 						manager->register_float[register_var_push] = instruction.arg2;
 					}
@@ -190,7 +191,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 					sprintf(risc_inst->register_arg2, "fa%d", instruction.arg2);
 				else {
 					sprintf(risc_inst->register_arg2, "ft2");
-					fprintf(fd, "fsw ft2 %d(t6)\n", (instruction.arg2 - 8) * 4);
+					fprintf(fp, "fsw ft2 %d(t6)\n", (instruction.arg2 - 8) * 4);
 				}
 			}
 		}
@@ -212,15 +213,15 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 							fprintf(stderr, "Error: var not in float_use\n");
 							exit(1);
 						}
-						fprintf(fd, "fsw fs%d %d(t5)\n", register_var_push,
-							-addr_vat_to_push * 4);
+						fprintf(fp, "fsw fs%d %d(t5)\n", register_var_push,
+							-(addr_vat_to_push + 1) * 4);
 
 						if (!is_in(manager->float_used, manager->nb_float, instruction.ret,
 							   &index)) {
 							fprintf(stderr, "Error: var not in float_use\n");
 							exit(1);
 						}
-						fprintf(fd, "flw fs%d %d(t5)\n", register_var_push, -index * 4);
+						fprintf(fp, "flw fs%d %d(t5)\n", register_var_push, -(index + 1) * 4);
 						sprintf(risc_inst->register_result, "fs%d", register_var_push);
 						manager->register_float[register_var_push] = instruction.ret;
 					}
@@ -231,7 +232,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 					sprintf(risc_inst->register_result, "fa%d", instruction.ret);
 				else {
 					sprintf(risc_inst->register_result, "ft3");
-					fprintf(fd, "fsw ft3 %d(t6)\n", (instruction.ret - 8) * 4);
+					fprintf(fp, "fsw ft3 %d(t6)\n", (instruction.ret - 8) * 4);
 					restore = 1;
 				}
 			}
@@ -255,15 +256,15 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 							fprintf(stderr, "Error: var not in int_used\n");
 							exit(1);
 						}
-						fprintf(fd, "sw s%d %d(t6)\n", register_var_push,
-							-addr_vat_to_push * 4);
+						fprintf(fp, "sw s%d %d(t6)\n", register_var_push,
+							-(addr_vat_to_push + 1) * 4);
 
 						if (!is_in(manager->int_used, manager->nb_int, instruction.arg1,
 							   &index)) {
 							fprintf(stderr, "Error: var not in int_used\n");
 							exit(1);
 						}
-						fprintf(fd, "lw s%d %d(t6)\n", register_var_push, -index * 4);
+						fprintf(fp, "lw s%d %d(t6)\n", register_var_push, -(index + 1) * 4);
 						sprintf(risc_inst->register_arg1, "s%d", register_var_push);
 						manager->register_int[register_var_push] = instruction.arg1;
 					}
@@ -271,14 +272,14 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 			}
 			if (instruction.scope_1 == CIMPLE_TEXT) {
 				sprintf(risc_inst->register_arg1, "t2");
-				fprintf(fd, "la t2 text_%d\n", instruction.arg1);
+				fprintf(fp, "la t2 text_%d\n", instruction.arg1);
 			}
 			if (instruction.scope_1 == CIMPLE_ARG) {
 				if (instruction.arg1 < 8)
 					sprintf(risc_inst->register_arg1, "a%d", instruction.arg1);
 				else
 					sprintf(risc_inst->register_arg1, "t2");
-				fprintf(fd, "sw t2 %d(t6)\n", (instruction.arg1 - 8) * 4);
+				fprintf(fp, "sw t2 %d(t6)\n", (instruction.arg1 - 8) * 4);
 			}
 		}
 		if (use_arg2) {
@@ -299,15 +300,15 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 							fprintf(stderr, "Error: var not in int_used\n");
 							exit(1);
 						}
-						fprintf(fd, "sw s%d %d(t6)\n", register_var_push,
-							-addr_vat_to_push * 4);
+						fprintf(fp, "sw s%d %d(t6)\n", register_var_push,
+							-(addr_vat_to_push + 1) * 4);
 
 						if (!is_in(manager->int_used, manager->nb_int, instruction.arg2,
 							   &index)) {
 							fprintf(stderr, "Error: var not in int_used\n");
 							exit(1);
 						}
-						fprintf(fd, "lw s%d %d(t6)\n", register_var_push, -index * 4);
+						fprintf(fp, "lw s%d %d(t6)\n", register_var_push, -(index + 1) * 4);
 						sprintf(risc_inst->register_arg2, "s%d", register_var_push);
 						manager->register_int[register_var_push] = instruction.arg2;
 					}
@@ -315,14 +316,14 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 			}
 			if (instruction.scope_2 == CIMPLE_TEXT) {
 				sprintf(risc_inst->register_arg2, "t3");
-				fprintf(fd, "la t3 text_%d\n", instruction.arg2);
+				fprintf(fp, "la t3 text_%d\n", instruction.arg2);
 			}
 			if (instruction.scope_2 == CIMPLE_ARG) {
 				if (instruction.arg2 < 8)
 					sprintf(risc_inst->register_arg2, "a%d", instruction.arg2);
 				else
 					sprintf(risc_inst->register_arg2, "t3");
-				fprintf(fd, "sw t3 %d(t6)\n", (instruction.arg2 - 8) * 4);
+				fprintf(fp, "sw t3 %d(t6)\n", (instruction.arg2 - 8) * 4);
 			}
 		}
 		if (use_ret) {
@@ -343,15 +344,15 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 							fprintf(stderr, "Error: var not in int_used\n");
 							exit(1);
 						}
-						fprintf(fd, "sw s%d %d(t6)\n", register_var_push,
-							-addr_vat_to_push * 4);
+						fprintf(fp, "sw s%d %d(t6)\n", register_var_push,
+							-(addr_vat_to_push + 1) * 4);
 
 						if (!is_in(manager->int_used, manager->nb_int, instruction.ret,
 							   &index)) {
 							fprintf(stderr, "Error: var not in int_used\n");
 							exit(1);
 						}
-						fprintf(fd, "lw s%d %d(t6)\n", register_var_push, -index * 4);
+						fprintf(fp, "lw s%d %d(t6)\n", register_var_push, -(index + 1) * 4);
 						sprintf(risc_inst->register_result, "s%d", register_var_push);
 						manager->register_int[register_var_push] = instruction.ret;
 					}
@@ -366,7 +367,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 					sprintf(risc_inst->register_result, "a%d", instruction.ret);
 				else
 					sprintf(risc_inst->register_result, "t4");
-				fprintf(fd, "sw t4 %d(t6)\n", (instruction.ret - 8) * 4);
+				fprintf(fp, "sw t4 %d(t6)\n", (instruction.ret - 8) * 4);
 				restore = 1;
 			}
 		}
@@ -374,14 +375,23 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 	return restore;
 }
 
-void restore_args(struct cimple_instr instruction, FILE *fd)
+void restore_args(struct cimple_instr instruction, FILE *fp)
 {
-	if(instruction.is_float){
-		fprintf(fd, "flw ft3 %d(t6)\n", (instruction.arg1 - 8) * 4);
+	if (instruction.is_float) {
+		fprintf(fp, "flw ft3 %d(t6)\n", (instruction.arg1 - 8) * 4);
+	} else {
+		fprintf(fp, "lw t4 %d(t6)\n", (instruction.arg1 - 8) * 4);
 	}
-	else{
-		fprintf(fd, "lw t4 %d(t6)\n", (instruction.arg1 - 8) * 4);
-	}
+}
+
+int is_first_param(register_manager *manager)
+{
+	struct cimple_function *func = manager->current_func;
+	if (manager->current_inst_index == 0)
+		return 1;
+	if (func->instrs[manager->current_inst_index - 1].op != OP_PARAM)
+		return 1;
+	return 0;
 }
 void risc_assign(struct cimple_instr instruction, FILE *fp, register_manager *manager)
 {
@@ -389,15 +399,13 @@ void risc_assign(struct cimple_instr instruction, FILE *fp, register_manager *ma
 	manage_register(instruction, &risc_inst, 1, 0, 1, manager, fp);
 	if (instruction.scope_1 == CIMPLE_CONST) {
 		if (instruction.is_float) {
-			// à traduire en hexa
 			fprintf(fp, "li t0 %x\n", instruction.arg1);
 			fprintf(fp, "fmv.s.x %s t0\n", risc_inst.register_result);
 		} else
 			fprintf(fp, "li %s %d\n", risc_inst.register_result, instruction.arg1);
 	} else {
 		if (instruction.is_float) {
-			fprintf(fp, "fsw %s 0(sp)\n", risc_inst.register_arg1);
-			fprintf(fp, "flw %s 0(sp)\n", risc_inst.register_result);
+			fprintf(fp, "fmv.s %s %s\n", risc_inst.register_result, risc_inst.register_arg1);
 		} else
 			fprintf(fp, "mv %s %s\n", risc_inst.register_result, risc_inst.register_arg1);
 	}
@@ -498,8 +506,7 @@ void risc_mul(struct cimple_instr instruction, FILE *fp, register_manager *manag
 	exchange_args_const(&instruction, &risc_inst);
 	if (instruction.scope_2 == CIMPLE_CONST) {
 		if (instruction.is_float) {
-			// à traduire en hexa
-			fprintf(fp, "li t0 %x\n", *(uint32_t *)&instruction.arg2);
+			fprintf(fp, "li t0 %x\n", instruction.arg2);
 			fprintf(fp, "fmv.s.x ft0 t0\n");
 			fprintf(fp, "fmul.s %s %s ft0\n", risc_inst.register_result, risc_inst.register_arg1);
 		} else {
@@ -840,9 +847,48 @@ void risk_convert_bool(struct cimple_instr instruction, FILE *fp, register_manag
 		fprintf(fp, "snez %s %s\n", risc_inst.register_result, risc_inst.register_arg1);
 	}
 }
+int min(int a, int b)
+{
+	if (a < b)
+		return a;
+	return b;
+}
+
+void store_register_s()
+{
+}
+
+void store_register_for_call(FILE *fp, struct cimple_instr instruction, uint32_t is_syscall)
+{
+	fprintf(fp, "sw ra -4(sp)\n");
+	fprintf(fp, "sw t5 -8(sp)\n");
+	fprintf(fp, "sw t6 -12(sp)\n");
+	fprintf(fp, "addi sp sp -12\n");
+	// on sauvegarde les registres des arguments qui vont être utilisés par la suite
+	int max_arg = 8;
+	if (is_syscall)
+		max_arg = 7;
+	int arg_to_store_count = min(instruction.arg2 + 1, max_arg);
+	if (instruction.op == OP_CALL || instruction.op == OP_SYSCALL) {
+		arg_to_store_count = min(instruction.arg2, max_arg);
+	}
+	for (int i = 0; i < arg_to_store_count; i++) {
+		fprintf(fp, "sw a%d -%d(sp)\n", i, (i + 1) * 4);
+	}
+	fprintf(fp, "addi sp sp -%d\n", arg_to_store_count * 4);
+	// on sauvegarde a7 si c'est un syscall
+	if (is_syscall) {
+		fprintf(fp, "sw a7 -4(sp)\n");
+		fprintf(fp, "addi sp sp -4\n");
+	}
+}
 
 void risc_syscall(struct cimple_instr instruction, FILE *fp, register_manager *manager)
 {
+	if (is_first_param(manager)) {
+		store_register_for_call(fp, instruction, 1);
+	}
+
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 0, 0, 1, manager, fp);
 	fprintf(fp, "li a7 %d\n", instruction.arg1);
@@ -851,18 +897,112 @@ void risc_syscall(struct cimple_instr instruction, FILE *fp, register_manager *m
 		fprintf(fp, "fmv.s %s fa0\n", risc_inst.register_result);
 	else
 		fprintf(fp, "mv %s a0\n", risc_inst.register_result);
+	// on rétablit les arguments et ra, t5, t6
+	// a7
+	fprintf(fp, "lw a7 0(sp)\n");
+	fprintf(fp, "addi sp sp 4\n");
+	// arguments
+	if (instruction.arg2 > 7)
+		fprintf(fp, "addi sp sp %d\n", (instruction.arg2 - 7) * 4);
+	int nb_arg = min(instruction.arg2, 7);
+	for (int i = 0; i < nb_arg; i++)
+		fprintf(fp, "lw a%d %d(sp)\n", (nb_arg - 1) - i, (i) * 4);
+	fprintf(fp, "addi sp sp %d\n", nb_arg * 4);
+	fprintf(fp, "lw t6 0(sp)\n");
+	fprintf(fp, "lw t5 4(sp)\n");
+	fprintf(fp, "lw ra 8(sp)\n");
+	fprintf(fp, "addi sp sp 12\n");
 }
 
 void risc_call(struct cimple_instr instruction, FILE *fp, register_manager *manager)
 {
+	// cas ou il n'y a pas d'arguments
+	if (is_first_param(manager)) {
+		store_register_for_call(fp, instruction, 0);
+	}
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 0, 0, 1, manager, fp);
 	fprintf(fp, "jal func_%d\n", instruction.arg1);
-	fprintf(fp, "mv %s a0\n", risc_inst.register_result);
+	if (instruction.is_float)
+		fprintf(fp, "fmv.s %s fa0\n", risc_inst.register_result);
+	else
+		fprintf(fp, "mv %s a0\n", risc_inst.register_result);
+	// on rétablit les arguments et ra, t5, t6
+	if (instruction.arg2 > 8)
+		fprintf(fp, "addi sp sp %d\n", (instruction.arg2 - 8) * 4);
+	int nb_arg = min(instruction.arg2, 8);
+	for (int i = 0; i < nb_arg; i++)
+		fprintf(fp, "lw a%d %d(sp)\n", (nb_arg - 1) - i, (i) * 4);
+	fprintf(fp, "addi sp sp %d\n", nb_arg * 4);
+	fprintf(fp, "lw t6 0(sp)\n");
+	fprintf(fp, "lw t5 4(sp)\n");
+	fprintf(fp, "lw ra 8(sp)\n");
+	fprintf(fp, "addi sp sp 12\n");
 }
 
 void risc_param(struct cimple_instr instruction, FILE *fp, register_manager *manager)
 {
+	// on sauvegarde les registres utilisés en tant que pointeurs
+	if (is_first_param(manager)) {
+		store_register_for_call(fp, instruction, instruction.ret);
+	}
+	risc_instruction risc_inst;
+	manage_register(instruction, &risc_inst, 1, 0, 0, manager, fp);
+	uint32_t max_arg = 8;
+	if (instruction.ret == 1)
+		max_arg = 7; // cas du syscall car on met le numéro de la fonction dans a7
+	if (instruction.scope_1 == CIMPLE_CONST) {
+		if (instruction.is_float) {
+			fprintf(fp, "li t0 %x\n", instruction.arg1);
+			if (instruction.arg2 < max_arg)
+				fprintf(fp, "fmv.s.x fa%s t0\n", risc_inst.register_arg2);
+			// les argument doivent être donnés dans l'ordre décroissant
+			else {
+				fprintf(fp, "sw t0 -4(sp)\n");
+				fprintf(fp, "addi sp sp -4\n");
+			}
+		} else if (instruction.arg2 < 8)
+			fprintf(fp, "li a%s %d\n", risc_inst.register_arg2, instruction.arg1);
+		else {
+			fprintf(fp, "li t0 %d\n", instruction.arg1);
+			fprintf(fp, "sw t0 -4(sp)\n");
+			fprintf(fp, "addi sp sp -4\n");
+		}
+	} else {
+		if (instruction.is_float) {
+			if (instruction.arg2 < max_arg)
+				fprintf(fp, "fmv.s fa%s %s\n", risc_inst.register_arg2, risc_inst.register_arg1);
+			else {
+				fprintf(fp, "fsw %s -4(sp)\n", risc_inst.register_arg1);
+				fprintf(fp, "addi sp sp -4\n");
+			}
+		} else if (instruction.arg2 < 8)
+			fprintf(fp, "mv a%s %s\n", risc_inst.register_arg2, risc_inst.register_arg1);
+		else {
+			fprintf(fp, "sw %s -4(sp)\n", risc_inst.register_arg1);
+			fprintf(fp, "addi sp sp -4\n");
+		}
+	}
+}
+
+void risc_return(struct cimple_instr instruction, FILE *fp, register_manager *manager)
+{
+	risc_instruction risc_inst;
+	manage_register(instruction, &risc_inst, 1, 0, 0, manager, fp);
+	if (instruction.scope_1 == CIMPLE_CONST) {
+		if (instruction.is_float) {
+			fprintf(fp, "li t0 %x\n", instruction.arg1);
+			fprintf(fp, "fmv.s.x fa0 t0\n");
+		} else
+			fprintf(fp, "li a0 %d\n", instruction.arg1);
+	} else {
+		if (instruction.is_float) {
+			fprintf(fp, "fmv.s fa0 %s\n", risc_inst.register_arg1);
+		} else
+			fprintf(fp, "mv a0 %s\n", risc_inst.register_arg1);
+	}
+	fprintf(fp, "mv sp t6\n");
+	fprintf(fp, "jr ra\n");
 }
 
 void risc_ld(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -892,7 +1032,6 @@ int is_goto(struct cimple_instr instruction)
 	    instruction.op == OP_NOT_EQ || instruction.op == OP_NOT) {
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -1000,7 +1139,6 @@ int process_three_address(struct cimple_program program, FILE *fp)
 		manager.current_inst_index = 0;
 		manager.global_manager = NULL;
 
-
 		for (int i = 0; i < (int)func.size; i++) {
 			struct cimple_instr instruction = func.instrs[i];
 			if (is_in(label_use, func.size, i, NULL)) {
@@ -1080,13 +1218,19 @@ int process_three_address(struct cimple_program program, FILE *fp)
 				risc_call(instruction, fp, &manager);
 				break;
 			case OP_PARAM:
-
+				risc_param(instruction, fp, &manager);
 				break;
 			case OP_RETURN:
 				break;
 			case OP_LD:
+				risc_ld(instruction, fp, &manager);
 				break;
 			case OP_ST:
+				risc_st(instruction, fp, &manager);
+				break;
+			case OP_ALLOC:
+				break;
+			case OP_FREE:
 				break;
 			default:
 				fprintf(stderr, "Invalid operation: %d\n", instruction.op);
