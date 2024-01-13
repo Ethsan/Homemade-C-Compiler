@@ -693,7 +693,29 @@ tree build_call(tree expr, tree arg_list)
 	return node;
 }
 
-uint64_t get_type_size(tree type)
+tree get_base_type(tree type)
+{
+	if (type == NULL)
+		return NULL;
+	switch (TREE_CODE(type)) {
+	case VOID_TYPE:
+	case INT_TYPE:
+	case REAL_TYPE:
+		return type;
+	case ARRAY_TYPE:
+		return get_base_type(TREE_TYPE(type));
+	case FUNCTION_TYPE:
+		return type;
+	case STRUCT_TYPE:
+		return type;
+	case PTR_TYPE:
+		return get_base_type(TREE_TYPE(type));
+	default:
+		errx(EXIT_FAILURE, "unexpected: unknown type");
+	}
+}
+
+uint64_t get_sizeof(tree type)
 {
 	if (type == NULL)
 		return 0;
@@ -706,7 +728,7 @@ uint64_t get_type_size(tree type)
 	case REAL_TYPE:
 		return FLOAT_TYPE_SIZE;
 	case ARRAY_TYPE:
-		return TYPE_SIZE(type) * get_type_size(TREE_TYPE(type));
+		return TYPE_SIZE(type) * get_sizeof(TREE_TYPE(type));
 	case FUNCTION_TYPE:
 		return PTR_TYPE_SIZE;
 	case STRUCT_TYPE:
@@ -725,7 +747,7 @@ tree build_incr_expr(enum tree_code code, tree expr)
 	tree node = new_node(code, type);
 	EXPR_OPERAND(node, 0) = expr;
 	if (is_ptr(type))
-		EXPR_STEP(node) = get_type_size(TREE_TYPE(type));
+		EXPR_STEP(node) = get_sizeof(TREE_TYPE(type));
 	else if (is_integer(type) || is_real(type))
 		EXPR_STEP(node) = 1;
 	else
@@ -832,7 +854,7 @@ tree build_add_expr(enum tree_code code, tree left, tree right)
 			errx(EXIT_FAILURE, "adding pointers is not allowed");
 
 		if (is_ptr(ltype) && is_integer(rtype)) {
-			tree value = new_integer(get_type_size(TREE_TYPE(ltype)));
+			tree value = new_integer(get_sizeof(TREE_TYPE(ltype)));
 			tree mult = build_mult_expr(MUL_EXPR, right, value);
 
 			tree node = new_node(ADD_EXPR, TREE_TYPE(left));
@@ -843,7 +865,7 @@ tree build_add_expr(enum tree_code code, tree left, tree right)
 			return node;
 		}
 		if (is_integer(ltype) && is_ptr(rtype)) {
-			tree value = new_integer(get_type_size(TREE_TYPE(rtype)));
+			tree value = new_integer(get_sizeof(TREE_TYPE(rtype)));
 			tree mult = build_mult_expr(MUL_EXPR, left, value);
 
 			tree node = new_node(ADD_EXPR, TREE_TYPE(right));
@@ -867,7 +889,7 @@ tree build_add_expr(enum tree_code code, tree left, tree right)
 			return node;
 		}
 		if (is_ptr(ltype) && is_integer(rtype)) {
-			tree value = new_integer(get_type_size(TREE_TYPE(ltype)));
+			tree value = new_integer(get_sizeof(TREE_TYPE(ltype)));
 			tree mult = build_mult_expr(MUL_EXPR, right, value);
 
 			tree node = new_node(SUB_EXPR, TREE_TYPE(left));
@@ -1216,7 +1238,7 @@ tree build_default(tree stmt)
 tree build_sizeof(tree type)
 {
 	tree node = new_node(INTEGER_CST, new_node(INT_TYPE, NULL));
-	INT_VALUE(node) = get_type_size(type);
+	INT_VALUE(node) = get_sizeof(type);
 	TREE_SET_CONSTANT(node);
 	return node;
 }

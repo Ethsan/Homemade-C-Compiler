@@ -39,7 +39,6 @@ enum cimple_op {
 	OP_ST, // (OP_ST, address, uid, _)
 	OP_ALLOC,
 	OP_FREE,
-
 };
 
 enum cimple_scope {

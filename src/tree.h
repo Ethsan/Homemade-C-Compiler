@@ -403,3 +403,9 @@ tree build_function_decl(tree abstract_decl, tree parm_list);
 tree build_parm_decl(tree abstract_decl, tree type);
 
 void print_current_context(void);
+
+uint64_t get_sizeof(tree type);
+
+tree get_base_type(tree type);
+
+int is_real(tree type);
