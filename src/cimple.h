@@ -4,11 +4,11 @@
 enum cimple_op {
 	OP_NULL, // No operation
 	// opérateurs arithmétiques
-	OP_ADD,
-	OP_SUB,
-	OP_MUL,
-	OP_DIV,
-	OP_MOD, // reste de la division euclidienne
+	OP_ADD, // pas deux entiers/ flotant, et si entier alors sur le scope 2.
+	OP_SUB, // idem
+	OP_MUL, // idem
+	OP_DIV, // le premier comme le second peuvent être des entiers ou des flottants
+	OP_MOD, // reste de la division euclidienne 
 	OP_NEG,
 	OP_AND,
 	OP_OR,
@@ -26,6 +26,8 @@ enum cimple_op {
 	OP_NOT_EQ, // !=
 	OP_CONVERT_TO_INT,
 	OP_CONVERT_TO_FLOAT,
+	
+	OP_CONVERT_TRUTH, // convertit en 0 ou 1
 
 	OP_SYSCALL,
 	OP_CALL,
@@ -53,8 +55,14 @@ struct cimple_instr {
 	uint32_t uid;
 
 	uint32_t ret;
-	uint32_t arg1;
-	uint32_t arg2;
+	union {
+		uint32_t arg1;
+		float farg1;
+	};
+	union {
+		uint32_t arg2;
+		float farg2;
+	};
 
 	uint is_float : 1;
 };
