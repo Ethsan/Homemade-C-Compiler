@@ -956,14 +956,14 @@ void risc_param(struct cimple_instr instruction, FILE *fp, register_manager *man
 		if (instruction.is_float) {
 			fprintf(fp, "li t0 0x%x\n", instruction.arg1);
 			if (instruction.arg2 < max_arg)
-				fprintf(fp, "fmv.s.x fa%s t0\n", risc_inst.register_arg2);
+				fprintf(fp, "fmv.s.x fa%d t0\n", instruction.arg2);
 			// les argument doivent être donnés dans l'ordre décroissant
 			else {
 				fprintf(fp, "sw t0 -4(sp)\n");
 				fprintf(fp, "addi sp sp -4\n");
 			}
-		} else if (instruction.arg2 < 8)
-			fprintf(fp, "li a%s %d\n", risc_inst.register_arg2, instruction.arg1);
+		} else if (instruction.arg2 < max_arg)
+			fprintf(fp, "li a%d %d\n", instruction.arg2, instruction.arg1);
 		else {
 			fprintf(fp, "li t0 %d\n", instruction.arg1);
 			fprintf(fp, "sw t0 -4(sp)\n");
@@ -972,13 +972,13 @@ void risc_param(struct cimple_instr instruction, FILE *fp, register_manager *man
 	} else {
 		if (instruction.is_float) {
 			if (instruction.arg2 < max_arg)
-				fprintf(fp, "fmv.s fa%s %s\n", risc_inst.register_arg2, risc_inst.register_arg1);
+				fprintf(fp, "fmv.s fa%d %s\n", instruction.arg2, risc_inst.register_arg1);
 			else {
 				fprintf(fp, "fsw %s -4(sp)\n", risc_inst.register_arg1);
 				fprintf(fp, "addi sp sp -4\n");
 			}
-		} else if (instruction.arg2 < 8)
-			fprintf(fp, "mv a%s %s\n", risc_inst.register_arg2, risc_inst.register_arg1);
+		} else if (instruction.arg2 < max_arg)
+			fprintf(fp, "mv a%d %s\n", instruction.arg2, risc_inst.register_arg1);
 		else {
 			fprintf(fp, "sw %s -4(sp)\n", risc_inst.register_arg1);
 			fprintf(fp, "addi sp sp -4\n");
