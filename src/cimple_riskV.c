@@ -1075,21 +1075,21 @@ int error_malloc(void *ptr)
 }
 
 // à free
-void label_used(struct cimple_function cimple_func, int *label_use, int *nb_label_use, int *nb_int, int *nb_float,
-		int *int_used, int *float_used)
+void label_used(struct cimple_function cimple_func, int **label_use, int *nb_label_use, int *nb_int, int *nb_float,
+		int **int_used, int **float_used)
 {
-	int_used = malloc(1000 * sizeof(int));
-	error_malloc(int_used);
+	*int_used = malloc(1000 * sizeof(int));
+	error_malloc(*int_used);
 	int alloc_int = 1000;
-	nb_int = 0;
-	float_used = malloc(1000 * sizeof(int));
-	error_malloc(float_used);
+	*nb_int = 0;
+	*float_used = malloc(1000 * sizeof(int));
+	error_malloc(*float_used);
 	int alloc_float = 1000;
-	nb_float = 0;
+	*nb_float = 0;
 
 	nb_label_use = 0;
-	label_use = malloc(1000 * sizeof(int));
-	error_malloc(label_use);
+	*label_use = malloc(1000 * sizeof(int));
+	error_malloc(*label_use);
 	int alloc_label = 1000;
 
 	for (int i = 0; i < (int)cimple_func.size; i++) {
@@ -1097,38 +1097,39 @@ void label_used(struct cimple_function cimple_func, int *label_use, int *nb_labe
 		// label used
 		if (is_goto(instruction)) {
 			int goto_label = instruction.ret;
-			if (!is_in(label_use, cimple_func.size, goto_label, NULL)) {
+			if (!is_in(*label_use, cimple_func.size, goto_label, NULL)) {
 				if (*nb_label_use > alloc_label) {
-					label_use = realloc(label_use, (*nb_label_use + 1000) * sizeof(int));
-					error_malloc(label_use);
+					*label_use = realloc(*label_use, (*nb_label_use + 1000) * sizeof(int));
+					error_malloc(*label_use);
 					alloc_label += 1000;
 				}
-				label_use[*nb_label_use] = goto_label;
-				nb_label_use++;
+				(*label_use)[*nb_label_use] = goto_label;
+				(*nb_label_use)++;
 			}
 		}
 
 		// number of variable
-		if (instruction.scope_ret != CIMPLE_UID) {
+		if (instruction.scope_ret == CIMPLE_LOCAL) {
 			if (instruction.is_float) {
-				if (is_in(float_used, *nb_float, instruction.ret, NULL)) {
+				if (!is_in(*float_used, *nb_float, instruction.ret, NULL)) {
 					if (*nb_float > alloc_float) {
-						float_used = realloc(float_used, (*nb_float + 1000) * sizeof(int));
-						error_malloc(float_used);
+						*float_used = realloc(*float_used, (*nb_float + 1000) * sizeof(int));
+						error_malloc(*float_used);
 						alloc_float += 1000;
 					}
-					float_used[*nb_float] = instruction.ret;
-					nb_float++;
+					(*float_used)[*nb_float] = instruction.ret;
+					(*nb_float)++;
 				}
 			} else {
-				if (is_in(int_used, *nb_int, instruction.ret, NULL)) {
+				printf("%x %d %d\n", *int_used,*nb_int, instruction.ret);
+				if (!is_in(*int_used, *nb_int, instruction.ret, NULL)) {
 					if (*nb_int > alloc_int) {
-						int_used = realloc(int_used, (*nb_int + 1000) * sizeof(int));
-						error_malloc(int_used);
+						*int_used = realloc(*int_used, (*nb_int + 1000) * sizeof(int));
+						error_malloc(*int_used);
 						alloc_int += 1000;
 					}
-					int_used[*nb_int] = instruction.ret;
-					nb_int++;
+					(*int_used)[*nb_int] = instruction.ret;
+					(*nb_int)++;
 				}
 			}
 		}
@@ -1151,7 +1152,7 @@ int process_three_address(struct cimple_program program, FILE *fp)
 	fprintf(fp, "li a0 0\n");
 	fprintf(fp, "li a1 0\n");
 	fprintf(fp, "jal func_0\n"); // on appelle le main
-	fprintf(fp, "li a7 10\n"); // on quitte le programme
+	fprintf(fp, "li a7 93\n"); // on quitte le programme
 	fprintf(fp, "ecall\n");
 
 	for (int j = 0; j < (int)program.func_size; j++) {
@@ -1162,7 +1163,7 @@ int process_three_address(struct cimple_program program, FILE *fp)
 		int var_int = 0;
 		int var_float = 0;
 		int nb_label = 0;
-		label_used(func, label_use, &nb_label, &var_float, &var_int, int_used, float_used);
+		label_used(func, &label_use, &nb_label,  &var_int, &var_float,&int_used, &float_used);
 
 		fprintf(fp, "func_%d :\n", func.uid);
 		// allocation des variables
@@ -1190,9 +1191,12 @@ int process_three_address(struct cimple_program program, FILE *fp)
 		manager.current_inst_index = 0;
 		manager.global_manager = NULL;
 
+		printf("nb_int %d nb_float %d labeluse %x\n", var_int, var_float,label_use);
+		for(int i=0;i<var_int;i++)
+			printf("%d ", int_used[i]);
 		for (int i = 0; i < (int)func.size; i++) {
 			struct cimple_instr instruction = func.instrs[i];
-			if (is_in(label_use, func.size, i, NULL)) {
+			if (is_in(label_use, nb_label, i, NULL)) {
 				fprintf(fp, "labe_%d :\n", i);
 			}
 
@@ -1299,3 +1303,6 @@ int process_three_address(struct cimple_program program, FILE *fp)
 
 	return 0;
 }
+
+
+       
