@@ -68,7 +68,7 @@ int main()
 	} else {
 		printf("ok\n");
 	}
-	b = 1.;
+	f = 1.;
 	if (e ==f) {
 		printf("ok\n");
 	} else {
