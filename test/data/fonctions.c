@@ -19,8 +19,17 @@ int main()
 {
 	int a, b, c;
 	float d, e, f;
-	d = 4.3;
-	e = 5.2;
-	f = multiply_f(d, e);
-	return f;
+        a = 4;
+        b = 5;
+        c= multiply(a,b);
+        printf("c = ");
+        printint(c);
+        printf("\n");
+
+        d = 4.3;
+        e = 5.2;
+        f = multiply_f(d,e);
+        printf("f = ");
+        printfloat(f);
+        printf("\n");
 }

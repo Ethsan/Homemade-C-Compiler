@@ -19,8 +19,13 @@
 ../main -o out/tab.s data/tab.c
 # matice
 # fonctions
-# fonctions avec plus de 8 parametres
+../main -o out/fonctions.s data/fonctions.c
+
+# fonctions avec beaucoup de parametres
+../main -o out/fonctions2.s data/fonctions2.c
 # fonctions recursives factoriel
+../main -o out/factoriel.s data/factoriel.c
+
 
 # printf printmat printint printfloat
 ../main -o out/print.s data/print.c
