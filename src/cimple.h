@@ -95,6 +95,8 @@ struct cimple_program {
 
 	uint32_t func_size;
 	struct cimple_function *funcs;
+
+	uint uid_main;
 };
 
 struct cimple_program *cimple_new_program(void);
