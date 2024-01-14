@@ -1,5 +1,3 @@
-int printint(int num);
-int printf(char *string);
 int main()
 {
 	int a;

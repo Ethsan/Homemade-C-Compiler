@@ -1,6 +1,3 @@
-int printfloat(int i);
-int printf(int *string);
-
 int main(){
         float a, b,c;
         a = 7.;

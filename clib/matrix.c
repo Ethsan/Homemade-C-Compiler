@@ -120,8 +120,6 @@ void mat_copy_col(int r_in, int c_in, int c_out, int c_start, int c_end, int r_o
 		}
 	}
 }
-int printf(int *string);
-int printfloat(int i);
 
 void mat_print(int r, int c, float *in)
 {

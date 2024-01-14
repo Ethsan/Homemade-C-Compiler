@@ -8,6 +8,7 @@
 
 extern int yyparse(void);
 extern FILE *yyin;
+extern int lineno;
 extern tree current_context;
 
 /*void cimple_test(struct cimple_program *prog)
@@ -66,6 +67,24 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Error: cannot open file %s\n", args.input_file);
 		return 1;
 	}
+	FILE *stdio = fopen("./clib/stdio.h", "r");
+	if (stdio == NULL) {
+		fprintf(stderr, "Error: cannot open file ./clib/stdio.h\n");
+		return 1;
+	}
+	yyin = stdio;
+	yyparse();
+	fclose(stdio);
+	FILE *cmat = fopen("./clib/matrix.c", "r");
+	if (cmat == NULL) {
+		fprintf(stderr, "Error: cannot open file ./clib/cmat.c\n");
+		return 1;
+	}
+	yyin = cmat;
+	yyparse();
+	fclose(cmat);
+
+	lineno = 1;
 	yyin = in;
 	yyparse();
 	

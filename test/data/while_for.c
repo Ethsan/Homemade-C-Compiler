@@ -1,5 +1,3 @@
-int printint(int i);
-
 int main()
 {
 	int a,i;

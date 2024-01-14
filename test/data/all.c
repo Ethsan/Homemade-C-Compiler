@@ -1,7 +1,3 @@
-int printf(int *string);
-int printint(int i);
-int printfloat(float f);
-
 int factoriel(int n)
 {
 	if (n == 0) {
