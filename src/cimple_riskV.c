@@ -254,7 +254,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 						int addr_vat_to_push = 0;
 						if (!is_in(manager->int_used, manager->nb_int, var_to_push,
 							   &addr_vat_to_push)) {
-							fprintf(stderr, "Error: var not in int_used\n");
+							fprintf(stderr, "Error: var not in int_used %d\n", var_to_push);
 							exit(1);
 						}
 						fprintf(fp, "sw s%d %d(t6)\n", register_var_push,
@@ -262,7 +262,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 
 						if (!is_in(manager->int_used, manager->nb_int, instruction.arg1,
 							   &index)) {
-							fprintf(stderr, "Error: var not in int_used\n");
+							fprintf(stderr, "Error: var not in int_used %d\n", var_to_push);
 							exit(1);
 						}
 						fprintf(fp, "lw s%d %d(t6)\n", register_var_push, -(index + 1) * 4);
@@ -298,7 +298,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 						int addr_vat_to_push = 0;
 						if (!is_in(manager->int_used, manager->nb_int, var_to_push,
 							   &addr_vat_to_push)) {
-							fprintf(stderr, "Error: var not in int_used\n");
+							fprintf(stderr, "Error: var not in int_used %d\n", var_to_push);
 							exit(1);
 						}
 						fprintf(fp, "sw s%d %d(t6)\n", register_var_push,
@@ -306,7 +306,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 
 						if (!is_in(manager->int_used, manager->nb_int, instruction.arg2,
 							   &index)) {
-							fprintf(stderr, "Error: var not in int_used\n");
+							fprintf(stderr, "Error: var not in int_used %d\n", var_to_push);
 							exit(1);
 						}
 						fprintf(fp, "lw s%d %d(t6)\n", register_var_push, -(index + 1) * 4);
@@ -342,7 +342,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 						int addr_vat_to_push = 0;
 						if (!is_in(manager->int_used, manager->nb_int, var_to_push,
 							   &addr_vat_to_push)) {
-							fprintf(stderr, "Error: var not in int_used\n");
+							fprintf(stderr, "Error: var not in int_used %d\n", var_to_push);
 							exit(1);
 						}
 						fprintf(fp, "sw s%d %d(t6)\n", register_var_push,
@@ -350,7 +350,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 
 						if (!is_in(manager->int_used, manager->nb_int, instruction.ret,
 							   &index)) {
-							fprintf(stderr, "Error: var not in int_used\n");
+							fprintf(stderr, "Error: var not in int_used %d\n", var_to_push);
 							exit(1);
 						}
 						fprintf(fp, "lw s%d %d(t6)\n", register_var_push, -(index + 1) * 4);
@@ -1136,7 +1136,7 @@ void label_used(struct cimple_function cimple_func, int **label_use, int *nb_lab
 					(*nb_float)++;
 				}
 			} else {
-				printf("%x %d %d\n", *int_used, *nb_int, instruction.ret);
+				printf("%d %d\n", *nb_int, instruction.ret);
 				if (!is_in(*int_used, *nb_int, instruction.ret, NULL)) {
 					if (*nb_int > alloc_int) {
 						*int_used = realloc(*int_used, (*nb_int + 1000) * sizeof(int));
