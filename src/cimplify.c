@@ -443,76 +443,11 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 		break;
 	}
 	case EQ_EXPR: {
-		if (is_float) {
-			cimplify_rel(func, OP_EQ_EQ, EXPR_OPERAND(expr, 0), EXPR_OPERAND(expr, 1), ret);
-		} else {
-			cimplify_expr(func, EXPR_OPERAND(expr, 0), ret);
-			uint reg = push_anon_reg();
-			cimplify_expr(func, EXPR_OPERAND(expr, 1), reg);
-			struct cimple_instr instr = {
-				.op = OP_AND,
-				.uid = pc++,
-				.scope_ret = CIMPLE_LOCAL,
-				.ret = ret,
-				.scope_1 = CIMPLE_LOCAL,
-				.arg1 = reg,
-				.scope_2 = CIMPLE_LOCAL,
-				.arg2 = ret,
-			};
-			struct cimple_instr instr2 = {
-				.op = OP_CONVERT_BOOL,
-				.uid = pc++,
-				.scope_ret = CIMPLE_LOCAL,
-				.ret = ret,
-				.scope_1 = CIMPLE_LOCAL,
-				.arg1 = ret,
-			};
-			struct cimple_instr instr3 = {
-				.op = OP_XOR,
-				.uid = pc++,
-				.scope_ret = CIMPLE_LOCAL,
-				.ret = ret,
-				.scope_1 = CIMPLE_LOCAL,
-				.arg1 = ret,
-				.scope_2 = CIMPLE_CONST,
-				.arg2 = 1,
-			};
-			cimple_push_instr(func, instr);
-			cimple_push_instr(func, instr2);
-			cimple_push_instr(func, instr3);
-			pop_reg();
-		}
+		cimplify_rel(func, OP_EQ_EQ, EXPR_OPERAND(expr, 0), EXPR_OPERAND(expr, 1), ret);
 		break;
 	}
 	case NE_EXPR: {
-		if (is_float) {
-			cimplify_rel(func, OP_NOT_EQ, EXPR_OPERAND(expr, 0), EXPR_OPERAND(expr, 1), ret);
-		} else {
-			cimplify_expr(func, EXPR_OPERAND(expr, 0), ret);
-			uint reg = push_anon_reg();
-			cimplify_expr(func, EXPR_OPERAND(expr, 1), reg);
-			struct cimple_instr instr = {
-				.op = OP_XOR,
-				.uid = pc++,
-				.scope_ret = CIMPLE_LOCAL,
-				.ret = ret,
-				.scope_1 = CIMPLE_LOCAL,
-				.arg1 = reg,
-				.scope_2 = CIMPLE_LOCAL,
-				.arg2 = ret,
-			};
-			struct cimple_instr instr2 = {
-				.op = OP_CONVERT_BOOL,
-				.uid = pc++,
-				.scope_ret = CIMPLE_LOCAL,
-				.ret = ret,
-				.scope_1 = CIMPLE_LOCAL,
-				.arg1 = ret,
-			};
-			cimple_push_instr(func, instr);
-			cimple_push_instr(func, instr2);
-			pop_reg();
-		}
+		cimplify_rel(func, OP_NOT_EQ, EXPR_OPERAND(expr, 0), EXPR_OPERAND(expr, 1), ret);
 		break;
 	}
 	case LT_EXPR:
