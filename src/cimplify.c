@@ -1153,6 +1153,8 @@ void decl_builtin(struct cimple_program *prog, uint ecall, tree decl)
 			.arg1 = regs[i],
 			.scope_2 = CIMPLE_CONST,
 			.arg2 = i,
+			.scope_ret = CIMPLE_CONST,
+			.ret = 1, // is a syscall
 		};
 		cimple_push_instr(func, instr);
 		pop_reg();
