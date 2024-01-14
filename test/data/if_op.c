@@ -42,4 +42,5 @@ int main()
         } else {
                 c = 1;
         }
+        printint(c);
 }

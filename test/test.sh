@@ -5,10 +5,10 @@
 ../main -o out/add_float.s data/add_float.c
 # addition beaucoup de floats/entiers + cast int to float
 ../main -o out/lot_of_vars.s data/lot_of_vars.c
-# soustraction, multiplication, division, modulo 2 entiers
-# soustraction, multiplication, division 2 floats
-# op unaire (negatif, not ) entier et float
-# op binaire (&&, ||)
+# soustraction, multiplication, division, modulo 2 entiers + negatif
+# soustraction, multiplication, division 2 floats + negatif
+# op if (&&, ||, !)
+../main -o out/if_op.s data/if_op.c
 
 # if < > <= >= == !=
 # if else
@@ -20,5 +20,6 @@
 # fonctions recursives factoriel
 
 # printf printmat printint printfloat
+../main -o out/print.s data/print.c
 
 #tous les test dans un même fichier
