@@ -9,7 +9,7 @@
 
 void help(void)
 {
-	fprintf(stdout, "Usage: ./main [OPTION]... [FILE]...\n");
+	fprintf(stdout, "Usage: ./main [OPTION]... [FILE IN]\n");
 	fprintf(stdout, "Options:\n");
 	/*liste des options
 	-o : output
@@ -31,9 +31,6 @@ int parse_args(int argc, char *argv[], args_t *args)
 
 	while ((c = getopt(argc, argv, "hi:o:")) != -1) {
 		switch (c) {
-		case 'i':
-			args->input_file = optarg;
-			break;
 		case 'o':
 			args->output_file = optarg;
 			break;
@@ -61,8 +58,19 @@ int parse_args(int argc, char *argv[], args_t *args)
 			exit(1);
 		}
 	}
-	for (int i = optind; i < argc; i++)
+
+	// input file
+	if (optind < argc) {
+		args->input_file = argv[optind];
+	} else {
+		fprintf(stderr, "No input file\n");
+		err = 1;
+	}
+	
+	for (int i = optind+1; i < argc; i++)
 		printf("Non-option argument %s\n", argv[i]);
+
+
 
 	check_args(args);
 	return 0;

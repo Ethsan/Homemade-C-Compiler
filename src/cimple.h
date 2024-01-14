@@ -8,13 +8,12 @@ enum cimple_op {
 	OP_SUB, // idem
 	OP_MUL, // idem
 	OP_DIV, // le premier comme le second peuvent être des entiers ou des flottants
-	OP_MOD, // reste de la division euclidienne 
+	OP_MOD, // reste de la division euclidienne
 	OP_NEG,
 	OP_AND,
 	OP_OR,
 	OP_NOT, // !
 	OP_XOR,
-
 
 	OP_ASSIGN,
 
@@ -24,7 +23,7 @@ enum cimple_op {
 	OP_LESS, // <
 	OP_GREATER_EQ, // >=
 	OP_LESS_EQ, // <=
-	OP_EQ_EQ, // == 
+	OP_EQ_EQ, // ==
 	OP_NOT_EQ, // !=
 	OP_CONVERT_TO_INT, //(OP_CONVERT_TO_INT, var_float, _, var_int)
 	OP_CONVERT_TO_FLOAT, //(OP_CONVERT_TO_FLOAT, var_int, _, var_float)
@@ -35,16 +34,22 @@ enum cimple_op {
 	OP_CALL, // (OP_CALL, numéro_fonction, nombre de paramètres, var_retour)
 	OP_PARAM, // (OP_PARAM, var, numéro du paramètre,syscall ou non )
 	OP_RETURN, // (OP_RETURN, var_retour, _, _)
-	OP_LD,	// (OP_LD,address, _, uid)
+	OP_LD, // (OP_LD,address, _, uid)
 	OP_ST, // (OP_ST, address, uid, _)
+<<<<<<< HEAD
 	OP_ALLOC,
 	OP_FREE,
+=======
+	OP_ALLOC, // (OP_ALLOC, size, _, ret) ret est la variable dans laquelle il y a l'adresse
+	OP_FREE, // (OP_FREE,size,_,_) permet de free le dernier bloc alloué
+
+>>>>>>> 6870e85 (cimple)
 };
 
 enum cimple_scope {
 	CIMPLE_NONE,
 	CIMPLE_LOCAL,
-	CIMPLE_TEXT,
+	CIMPLE_DATA,
 	CIMPLE_ARG,
 	CIMPLE_CONST,
 	CIMPLE_UID,
