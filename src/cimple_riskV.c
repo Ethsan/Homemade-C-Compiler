@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <string.h>
 #include "cimple.h"
+#include "cimple_riskV.h"
 
 typedef struct risc_instruction {
 	char register_arg1[5];

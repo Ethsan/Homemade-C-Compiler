@@ -1,13 +1,17 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "tree.h"
 #include "cimplify.h"
 #include "args.h"
+#include "cimple_riskV.h"
+
 extern int yyparse(void);
 
 extern void print_current_context(void);
+extern FILE *yyin;
 
 extern tree current_context;
-
+/*
 int main(int argc, char *argv[])
 {
 	yyparse();
@@ -15,20 +19,9 @@ int main(int argc, char *argv[])
 	struct cimple_program *prog = cimplify(current_context);
 	cimple_dump_program(prog);
 }
+*/
 
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include "tree.h"
-#include "cimplify.h"
-#include "args.h"
 
-extern int yyparse(void);
-extern FILE *yyin;
-
-extern void print_current_context(void);
-
-extern tree current_context;
 
 void cimple_test(struct cimple_program *prog)
 {
@@ -78,7 +71,7 @@ void cimple_test(struct cimple_program *prog)
 
 int main(int argc, char *argv[])
 {
-	args_t args;
+/*	args_t args;
 	init_args(&args); 
 	parse_args( argc, argv,&args);
 	FILE *in = fopen(args.input_file, "r");
@@ -90,7 +83,7 @@ int main(int argc, char *argv[])
 	yyparse();
 	print_current_context();
 	struct cimple_program *prog = cimplify(current_context);
-	cimple_dump_program(prog);
+	cimple_dump_program(prog);*/
 	struct cimple_program prog;
 	cimple_test(&prog);
 	FILE *out = fopen("out.s", "w");
@@ -102,4 +95,3 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-*/
