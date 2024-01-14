@@ -623,7 +623,6 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 	case CALL_EXPR: {
 		int depth = 0;
 		tree arg_list = EXPR_OPERAND(expr, 1);
-		warnx("%s", tree_code_name(TREE_CODE(arg_list)));
 		for (tree iter = arg_list; iter != NULL; iter = TREE_CHAIN(iter)) {
 			depth++;
 		}
@@ -662,6 +661,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.arg1 = DECL_UID(decl),
 			.scope_2 = CIMPLE_CONST,
 			.arg2 = depth,
+			.is_float = is_float,
 		};
 		cimple_push_instr(func, instr);
 		break;
