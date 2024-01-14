@@ -61,10 +61,11 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 			get_var_inst(instruction, var);
 			for (int j = 0; j < 3; j++) {
 				if (var[j] != -1) {
-					int index = -1;
 					if (is_in(manager->register_float, 12, var[j], &index)) {
+						printf("var_use %d\n", index);
 						var_use[index] = 1;
 					}
+					
 				}
 			}
 		}
@@ -73,8 +74,8 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 			get_var_inst(instruction, var);
 			for (int j = 0; j < 3; j++) {
 				if (var[j] != -1) {
-					int index = -1;
 					if (is_in(manager->register_int, 12, var[j], &index)) {
+						printf("var_use %d\n", index);
 						var_use[index] = 1;
 					}
 				}
