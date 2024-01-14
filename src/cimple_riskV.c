@@ -1091,7 +1091,7 @@ void label_used(struct cimple_function cimple_func, int **label_use, int *nb_lab
 	int alloc_float = 1000;
 	*nb_float = 0;
 
-	nb_label_use = 0;
+	*nb_label_use = 0;
 	*label_use = malloc(1000 * sizeof(int));
 	error_malloc(*label_use);
 	int alloc_label = 1000;
