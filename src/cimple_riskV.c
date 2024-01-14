@@ -754,7 +754,7 @@ void rics_greater(struct cimple_instr instruction, FILE *fp, register_manager *m
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp,"blt %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
+	fprintf(fp, "blt %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
 }
 
 void risc_less(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -762,7 +762,7 @@ void risc_less(struct cimple_instr instruction, FILE *fp, register_manager *mana
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp,"blt %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp, "blt %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
 }
 
 void risc_greater_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -770,7 +770,7 @@ void risc_greater_eq(struct cimple_instr instruction, FILE *fp, register_manager
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp,"bge %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp, "bge %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
 }
 
 void risc_less_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -778,7 +778,7 @@ void risc_less_eq(struct cimple_instr instruction, FILE *fp, register_manager *m
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp,"bge %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
+	fprintf(fp, "bge %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
 }
 
 void risc_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -786,7 +786,7 @@ void risc_eq(struct cimple_instr instruction, FILE *fp, register_manager *manage
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp,"beq %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp, "beq %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
 }
 
 void risc_not_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -794,7 +794,7 @@ void risc_not_eq(struct cimple_instr instruction, FILE *fp, register_manager *ma
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp,"bne %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp, "bne %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
 }
 
 void risk_convert_to_int(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -1004,13 +1004,12 @@ void risc_return(struct cimple_instr instruction, FILE *fp, register_manager *ma
 	}
 	// on rétablit les registres s
 	fprintf(fp, "addi sp t5 -%d\n", manager->nb_float * 4);
-	for(int i =0;i<12;i++)
-		fprintf(fp, "lw s%d -%d(sp)\n", i, (i+1) * 4);
-	for(int i =0;i<12;i++)
-		fprintf(fp, "flw fs%d -%d(sp)\n", i, (i+13) * 4);
+	for (int i = 0; i < 12; i++)
+		fprintf(fp, "lw s%d -%d(sp)\n", i, (i + 1) * 4);
+	for (int i = 0; i < 12; i++)
+		fprintf(fp, "flw fs%d -%d(sp)\n", i, (i + 13) * 4);
 	fprintf(fp, "mv sp t6\n");
 	fprintf(fp, "jr ra\n");
-
 }
 
 void risc_ld(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -1018,7 +1017,14 @@ void risc_ld(struct cimple_instr instruction, FILE *fp, register_manager *manage
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 0, 1, manager, fp);
 	if (instruction.is_float) {
-		fprintf(fp, "flw %s 0(%s)\n", risc_inst.register_result, risc_inst.register_arg1);
+		struct cimple_instr instr_non_float;
+		instr_non_float.op = OP_LD;
+		instr_non_float.arg1 = instruction.arg1;
+		instr_non_float.scope_1 = instruction.scope_1;
+		instr_non_float.is_float = 0;
+		risc_instruction risc_inst_temp;
+		manage_register(instr_non_float, &risc_inst_temp, 1, 0, 0, manager, fp);
+		fprintf(fp, "flw %s 0(%s)\n", risc_inst.register_result, risc_inst_temp.register_arg1);
 	} else
 		fprintf(fp, "lw %s 0(%s)\n", risc_inst.register_result, risc_inst.register_arg1);
 }
@@ -1028,6 +1034,13 @@ void risc_st(struct cimple_instr instruction, FILE *fp, register_manager *manage
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	if (instruction.is_float) {
+		struct cimple_instr instr_non_float;
+		instr_non_float.op = OP_ST;
+		instr_non_float.arg1 = instruction.arg1;
+		instr_non_float.scope_1 = instruction.scope_1;
+		instr_non_float.is_float = 0;
+		risc_instruction risc_inst_temp;
+		manage_register(instr_non_float, &risc_inst_temp, 1, 0, 0, manager, fp);
 		fprintf(fp, "fsw %s 0(%s)\n", risc_inst.register_arg2, risc_inst.register_arg1);
 	} else
 		fprintf(fp, "sw %s 0(%s)\n", risc_inst.register_arg2, risc_inst.register_arg1);
@@ -1037,10 +1050,9 @@ void risc_alloc(struct cimple_instr instruction, FILE *fp, register_manager *man
 {
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 0, 0, 1, manager, fp);
-	if(instruction.scope_1 == CIMPLE_CONST){
+	if (instruction.scope_1 == CIMPLE_CONST) {
 		fprintf(fp, "addi sp sp -%d\n", instruction.arg1); // à voir avec ethan si *4 ou pas
-	}
-	else{
+	} else {
 		fprintf(fp, "sub sp sp %s\n", risc_inst.register_arg1); // de même
 	}
 	fprintf(fp, "mv %s sp\n", risc_inst.register_result);
@@ -1050,10 +1062,9 @@ void risc_free(struct cimple_instr instruction, FILE *fp, register_manager *mana
 {
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 0, 0, 1, manager, fp);
-	if(instruction.scope_1 == CIMPLE_CONST){
+	if (instruction.scope_1 == CIMPLE_CONST) {
 		fprintf(fp, "addi sp sp %d\n", instruction.arg1); // à voir avec ethan si *4 ou pas
-	}
-	else{
+	} else {
 		fprintf(fp, "add sp sp %s\n", risc_inst.register_arg1); // de même
 	}
 }
@@ -1125,7 +1136,7 @@ void label_used(struct cimple_function cimple_func, int **label_use, int *nb_lab
 					(*nb_float)++;
 				}
 			} else {
-				printf("%x %d %d\n", *int_used,*nb_int, instruction.ret);
+				printf("%x %d %d\n", *int_used, *nb_int, instruction.ret);
 				if (!is_in(*int_used, *nb_int, instruction.ret, NULL)) {
 					if (*nb_int > alloc_int) {
 						*int_used = realloc(*int_used, (*nb_int + 1000) * sizeof(int));
@@ -1143,7 +1154,7 @@ void label_used(struct cimple_function cimple_func, int **label_use, int *nb_lab
 int process_cimple(struct cimple_program program, FILE *fp)
 {
 	fprintf(fp, ".data\n");
-	for(int i =0;i<(int)program.decl_size;i++){
+	for (int i = 0; i < (int)program.decl_size; i++) {
 		struct cimple_string string = program.decls[i];
 		fprintf(fp, "decl_%d : \n", string.uid);
 		fprintf(fp, ".asciiz \"%s\"\n", string.str);
@@ -1167,7 +1178,7 @@ int process_cimple(struct cimple_program program, FILE *fp)
 		int var_int = 0;
 		int var_float = 0;
 		int nb_label = 0;
-		label_used(func, &label_use, &nb_label,  &var_int, &var_float,&int_used, &float_used);
+		label_used(func, &label_use, &nb_label, &var_int, &var_float, &int_used, &float_used);
 
 		fprintf(fp, "func_%d :\n", func.uid);
 		// allocation des variables
@@ -1176,10 +1187,10 @@ int process_cimple(struct cimple_program program, FILE *fp)
 		fprintf(fp, "mv t5 sp\n");
 		fprintf(fp, "addi sp sp %d\n", -((var_float) * 4));
 		// on push les anciens registres s
-		for(int i =0;i<12;i++)
-			fprintf(fp, "sw s%d -%d(sp)\n", i, (i+1) * 4);
-		for(int i =0;i<12;i++)
-			fprintf(fp, "fsw fs%d -%d(sp)\n", i, (i+13) * 4);
+		for (int i = 0; i < 12; i++)
+			fprintf(fp, "sw s%d -%d(sp)\n", i, (i + 1) * 4);
+		for (int i = 0; i < 12; i++)
+			fprintf(fp, "fsw fs%d -%d(sp)\n", i, (i + 13) * 4);
 		fprintf(fp, "addi sp sp -96\n");
 		// gestion des registres
 		register_manager manager;
@@ -1195,8 +1206,8 @@ int process_cimple(struct cimple_program program, FILE *fp)
 		manager.current_inst_index = 0;
 		manager.global_manager = NULL;
 
-		printf("nb_int %d nb_float %d labeluse %x\n", var_int, var_float,label_use);
-		for(int i=0;i<var_int;i++)
+		printf("nb_int %d nb_float %d labeluse %x\n", var_int, var_float, label_use);
+		for (int i = 0; i < var_int; i++)
 			printf("%d ", int_used[i]);
 		for (int i = 0; i < (int)func.size; i++) {
 			struct cimple_instr instruction = func.instrs[i];
@@ -1307,6 +1318,3 @@ int process_cimple(struct cimple_program program, FILE *fp)
 
 	return 0;
 }
-
-
-       
