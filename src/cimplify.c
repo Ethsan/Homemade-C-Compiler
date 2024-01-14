@@ -467,8 +467,17 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 				.scope_1 = CIMPLE_LOCAL,
 				.arg1 = ret,
 			};
+			struct cimple_instr instr3 = {
+				.op = OP_NOT,
+				.uid = pc++,
+				.scope_ret = CIMPLE_LOCAL,
+				.ret = ret,
+				.scope_1 = CIMPLE_LOCAL,
+				.arg1 = ret,
+			};
 			cimple_push_instr(func, instr);
 			cimple_push_instr(func, instr2);
+			cimple_push_instr(func, instr3);
 			pop_reg();
 		}
 		break;
@@ -498,17 +507,8 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 				.scope_1 = CIMPLE_LOCAL,
 				.arg1 = ret,
 			};
-			struct cimple_instr instr3 = {
-				.op = OP_NOT,
-				.uid = pc++,
-				.scope_ret = CIMPLE_LOCAL,
-				.ret = ret,
-				.scope_1 = CIMPLE_LOCAL,
-				.arg1 = ret,
-			};
 			cimple_push_instr(func, instr);
 			cimple_push_instr(func, instr2);
-			cimple_push_instr(func, instr3);
 			pop_reg();
 		}
 		break;
