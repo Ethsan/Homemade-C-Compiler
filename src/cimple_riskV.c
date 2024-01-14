@@ -816,7 +816,7 @@ void risk_convert_to_int(struct cimple_instr instruction, FILE *fp, register_man
 		instr_float.is_float = 1;
 		manage_register(instr_float, &risc_inst_temp, 1, 0, 0, manager, fp);
 		manage_register(instruction, &risc_inst, 0, 0, 1, manager, fp);
-		fprintf(fp, "fcvt.w.s %s %s\n", risc_inst_temp.register_result, risc_inst_temp.register_arg1);
+		fprintf(fp, "fcvt.w.s %s %s\n", risc_inst.register_result, risc_inst_temp.register_arg1);
 	}
 }
 
@@ -830,8 +830,8 @@ void risk_convert_to_float(struct cimple_instr instruction, FILE *fp, register_m
 		struct cimple_instr instr_float;
 		risc_instruction risc_inst_temp;
 		instr_float.op = OP_CONVERT_TO_FLOAT;
-		instr_float.arg1 = instruction.arg1;
-		instr_float.scope_1 = instruction.scope_1;
+		instr_float.ret = instruction.ret;
+		instr_float.scope_ret = instruction.scope_ret;
 		instr_float.is_float = 1;
 		manage_register(instr_float, &risc_inst_temp, 0, 0, 1, manager, fp);
 		manage_register(instruction, &risc_inst, 1, 0, 0, manager, fp);
