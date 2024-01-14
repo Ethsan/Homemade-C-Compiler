@@ -650,8 +650,8 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 		struct cimple_instr jmp = {
 			.op = OP_GOTO,
 			.uid = pc++,
-			.scope_1 = CIMPLE_CONST,
-			.arg1 = 0, // Not defined yet
+			.scope_ret = CIMPLE_CONST,
+			.ret = 0, // Not defined yet
 		};
 		int idx_jmp = cimple_push_instr(func, jmp);
 		func->instrs[idx_cond].ret = pc;
@@ -786,8 +786,8 @@ void cimplify_while(struct cimple_function *func, tree stmt)
 	struct cimple_instr jmp = {
 		.op = OP_GOTO,
 		.uid = pc++,
-		.scope_1 = CIMPLE_CONST,
-		.arg1 = start,
+		.scope_ret = CIMPLE_CONST,
+		.ret = start,
 	};
 	cimple_push_instr(func, jmp);
 	func->instrs[cond_idx].ret = pc;
@@ -850,8 +850,8 @@ void cimplify_for(struct cimple_function *func, tree stmt)
 	struct cimple_instr jmp = {
 		.op = OP_GOTO,
 		.uid = pc++,
-		.scope_1 = CIMPLE_CONST,
-		.arg1 = start,
+		.scope_ret = CIMPLE_CONST,
+		.ret = start,
 	};
 	cimple_push_instr(func, jmp);
 	func->instrs[cond_idx].ret = pc;
@@ -888,8 +888,8 @@ void cimplify_if(struct cimple_function *func, tree stmt)
 		struct cimple_instr jmp_instr = {
 			.op = OP_GOTO,
 			.uid = pc++,
-			.scope_1 = CIMPLE_UID,
-			.arg1 = 0, // Not defined yet
+			.scope_ret = CIMPLE_UID,
+			.ret = 0, // Not defined yet
 		};
 		func->instrs[cond_idx].ret = pc;
 		int jmp_idx = cimple_push_instr(func, jmp_instr);
