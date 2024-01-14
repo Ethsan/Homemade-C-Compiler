@@ -700,11 +700,10 @@ void risc_xor(struct cimple_instr instruction, FILE *fp, register_manager *manag
 	}
 }
 
-void risc_goto(struct cimple_instr instruction, FILE *fp)
+void risc_goto(struct cimple_instr instruction, FILE *fp, register_manager *manager)
 {
-	fprintf(fp, "j label_%d\n", instruction.ret);
+	fprintf(fp, "j func_%d_label_%d\n", manager->current_func->uid, instruction.ret);
 }
-
 // place un entier dans un registre temporaire pour effectuer les opérations
 void temp_register(struct cimple_instr instruction, risc_instruction *risc_inst, FILE *fp)
 {
@@ -755,9 +754,9 @@ void rics_greater(struct cimple_instr instruction, FILE *fp, register_manager *m
 	temp_register(instruction, &risc_inst, fp);
 	if (instruction.is_float) {
 		fprintf(fp, "fgt.s t0 %s %s\n", risc_inst.register_arg1, risc_inst.register_arg2);
-		fprintf(fp, "bnez t0 label_%d\n", instruction.ret);
+		fprintf(fp, "bnez t0 func_%d_label_%d\n",manager->current_func->uid, instruction.ret);
 	} else
-		fprintf(fp, "bgt %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
+		fprintf(fp, "bgt %s %s func_%d_label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2,manager->current_func->uid, instruction.ret);
 }
 
 void risc_less(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -767,9 +766,9 @@ void risc_less(struct cimple_instr instruction, FILE *fp, register_manager *mana
 	temp_register(instruction, &risc_inst, fp);
 	if (instruction.is_float) {
 		fprintf(fp, "flt.s t0 %s %s\n", risc_inst.register_arg1, risc_inst.register_arg2);
-		fprintf(fp, "bnez t0 label_%d\n", instruction.ret);
+		fprintf(fp, "bnez t0 func_%d_label_%d\n",manager->current_func->uid, instruction.ret);
 	} else
-		fprintf(fp, "blt %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
+		fprintf(fp, "blt %s %s func_%d_label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2,manager->current_func->uid, instruction.ret);
 }
 
 void risc_greater_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -779,9 +778,9 @@ void risc_greater_eq(struct cimple_instr instruction, FILE *fp, register_manager
 	temp_register(instruction, &risc_inst, fp);
 	if (instruction.is_float) {
 		fprintf(fp, "fge.s t0 %s %s\n", risc_inst.register_arg1, risc_inst.register_arg2);
-		fprintf(fp, "bnez t0 label_%d\n", instruction.ret);
+		fprintf(fp, "bnez t0 func_%d_label_%d\n",manager->current_func->uid, instruction.ret);
 	} else
-		fprintf(fp, "bge %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
+		fprintf(fp, "bge %s %s func_%d_label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2,manager->current_func->uid, instruction.ret);
 }
 
 void risc_less_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -791,9 +790,9 @@ void risc_less_eq(struct cimple_instr instruction, FILE *fp, register_manager *m
 	temp_register(instruction, &risc_inst, fp);
 	if (instruction.is_float) {
 		fprintf(fp, "fle.s t0 %s %s\n", risc_inst.register_arg1, risc_inst.register_arg2);
-		fprintf(fp, "bnez t0 label_%d\n", instruction.ret);
+		fprintf(fp, "bnez t0 func_%d_label_%d\n",manager->current_func->uid, instruction.ret);
 	} else
-		fprintf(fp, "ble %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
+		fprintf(fp, "ble %s %s func_%d_label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2,manager->current_func->uid, instruction.ret);
 }
 
 void risc_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -803,9 +802,9 @@ void risc_eq(struct cimple_instr instruction, FILE *fp, register_manager *manage
 	temp_register(instruction, &risc_inst, fp);
 	if (instruction.is_float) {
 		fprintf(fp, "feq.s t0 %s %s\n", risc_inst.register_arg1, risc_inst.register_arg2);
-		fprintf(fp, "bnez t0 label_%d\n", instruction.ret);
+		fprintf(fp, "bnez t0 func_%d_label_%d\n",manager->current_func->uid, instruction.ret);
 	} else
-		fprintf(fp, "beq %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
+		fprintf(fp, "beq %s %s func_%d_label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2,manager->current_func->uid, instruction.ret);
 }
 
 void risc_not_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -815,9 +814,9 @@ void risc_not_eq(struct cimple_instr instruction, FILE *fp, register_manager *ma
 	temp_register(instruction, &risc_inst, fp);
 	if (instruction.is_float) {
 		fprintf(fp, "feq.s t0 %s %s\n", risc_inst.register_arg1, risc_inst.register_arg2);
-		fprintf(fp, "beqz t0 label_%d\n", instruction.ret);
+		fprintf(fp, "beqz t0 func_%d_label_%d\n",manager->current_func->uid, instruction.ret);
 	} else
-		fprintf(fp, "bne %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
+		fprintf(fp, "bne %s %s func_%d_label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2,manager->current_func->uid, instruction.ret);
 }
 
 void risk_convert_to_int(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -1287,14 +1286,11 @@ int process_cimple(struct cimple_program program, FILE *fp)
 		manager.current_func = &func;
 		manager.current_inst_index = 0;
 		manager.global_manager = NULL;
-		for (int i = 0; i < nb_label; i++) {
-			printf("label_%d :\n", label_use[i]);
-		}
 
 		for (int i = 0; i < (int)func.size; i++) {
 			struct cimple_instr instruction = func.instrs[i];
 			if (is_in(label_use, nb_label, instruction.uid, NULL)) {
-				fprintf(fp, "label_%d :\n", instruction.uid);
+				fprintf(fp, "func_%d_label_%d :\n", func.uid, instruction.uid);
 			}
 
 			switch (instruction.op) {
@@ -1331,7 +1327,7 @@ int process_cimple(struct cimple_program program, FILE *fp)
 				risc_assign(instruction, fp, &manager);
 				break;
 			case OP_GOTO:
-				risc_goto(instruction, fp);
+				risc_goto(instruction, fp, &manager);
 				break;
 			case OP_GREATER:
 				rics_greater(instruction, fp, &manager);
