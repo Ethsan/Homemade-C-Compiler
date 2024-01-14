@@ -1166,7 +1166,7 @@ int process_cimple(struct cimple_program program, FILE *fp)
 	// chargement de argc et argv non géré donc sont mis à 0
 	fprintf(fp, "li a0 0\n");
 	fprintf(fp, "li a1 0\n");
-	fprintf(fp, "jal func_0\n"); // on appelle le main
+	fprintf(fp, "jal func_%d\n",program.uid_main); // on appelle le main
 	fprintf(fp, "li a7 93\n"); // on quitte le programme
 	fprintf(fp, "ecall\n");
 
