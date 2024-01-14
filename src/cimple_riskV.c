@@ -1040,7 +1040,7 @@ void risc_st(struct cimple_instr instruction, FILE *fp, register_manager *manage
 		instr_non_float.is_float = 0;
 		risc_instruction risc_inst_temp;
 		manage_register(instr_non_float, &risc_inst_temp, 1, 0, 0, manager, fp);
-		fprintf(fp, "fsw %s 0(%s)\n", risc_inst.register_arg2, risc_inst.register_arg1);
+		fprintf(fp, "fsw %s 0(%s)\n", risc_inst.register_arg2, risc_inst_temp.register_arg1);
 	} else
 		fprintf(fp, "sw %s 0(%s)\n", risc_inst.register_arg2, risc_inst.register_arg1);
 }
