@@ -178,9 +178,6 @@ void cimple_print_op(enum cimple_op op)
 	case OP_RETURN:
 		printf("RETURN");
 		break;
-	case OP_FUNC:
-		printf("FUNC");
-		break;
 	case OP_LD:
 		printf("LD");
 		break;
