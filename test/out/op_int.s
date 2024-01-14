@@ -533,7 +533,7 @@ li s3 1
 blt s2 s4 func_110_label_12
 li s3 0
 func_110_label_12 :
-beq s3 zero func_110_label_45
+beq s3 zero func_110_label_49
 li s2 0
 mv s1 s2
 func_110_label_15 :
@@ -544,7 +544,7 @@ li s3 1
 blt s2 s4 func_110_label_20
 li s3 0
 func_110_label_20 :
-beq s3 zero func_110_label_39
+beq s3 zero func_110_label_41
 sw t2 -24(t6)
 mv s4 a2
 mv s5 s0
@@ -589,10 +589,12 @@ lw t6 0(sp)
 lw t5 4(sp)
 lw ra 8(sp)
 addi sp sp 12
-addi s3 s2 1
-mv s1 s3
+mv s2 s1
+li s4 1
+add s2 s2 s4
+mv s1 s2
 j func_110_label_15
-func_110_label_39 :
+func_110_label_41 :
 la t2 decl_17
 mv s2 t2
 sw ra -4(sp)
@@ -610,10 +612,12 @@ lw t6 0(sp)
 lw t5 4(sp)
 lw ra 8(sp)
 addi sp sp 12
-addi s3 s2 1
-mv s0 s3
+mv s2 s0
+li s4 1
+add s2 s2 s4
+mv s0 s2
 j func_110_label_7
-func_110_label_45 :
+func_110_label_49 :
 li a0 0
 addi sp t5 -4
 lw s0 -4(sp)
@@ -684,7 +688,7 @@ li s4 1
 blt s2 s3 func_99_label_9
 li s4 0
 func_99_label_9 :
-beq s4 zero func_99_label_50
+beq s4 zero func_99_label_54
 sw t2 -20(t6)
 mv s2 a3
 mv s1 s2
@@ -696,7 +700,7 @@ li s4 1
 blt s2 s3 func_99_label_17
 li s4 0
 func_99_label_17 :
-beq s4 zero func_99_label_47
+beq s4 zero func_99_label_49
 sw t2 -4(t6)
 mv s3 a7
 mv s5 s0
@@ -730,14 +734,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_99_label_12
-func_99_label_47 :
-addi s4 s2 1
-mv s0 s4
+func_99_label_49 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_99_label_4
-func_99_label_50 :
+func_99_label_54 :
 li a0 0
 addi sp t5 -4
 lw s0 -4(sp)
@@ -809,7 +817,7 @@ li s4 1
 blt s2 s3 func_88_label_9
 li s4 0
 func_88_label_9 :
-beq s4 zero func_88_label_48
+beq s4 zero func_88_label_52
 li s2 0
 mv s1 s2
 func_88_label_12 :
@@ -820,7 +828,7 @@ li s4 1
 blt s2 s3 func_88_label_17
 li s4 0
 func_88_label_17 :
-beq s4 zero func_88_label_45
+beq s4 zero func_88_label_47
 sw t2 -4(t6)
 mv s3 a7
 mv s5 s0
@@ -851,14 +859,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_88_label_12
-func_88_label_45 :
-addi s4 s2 1
-mv s0 s4
+func_88_label_47 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_88_label_4
-func_88_label_48 :
+func_88_label_52 :
 li a0 0
 addi sp t5 -4
 lw s0 -4(sp)
@@ -929,7 +941,7 @@ li s4 1
 blt s2 s3 func_81_label_9
 li s4 0
 func_81_label_9 :
-beq s4 zero func_81_label_44
+beq s4 zero func_81_label_48
 li s2 0
 mv s1 s2
 func_81_label_12 :
@@ -940,7 +952,7 @@ li s4 1
 blt s2 s3 func_81_label_17
 li s4 0
 func_81_label_17 :
-beq s4 zero func_81_label_41
+beq s4 zero func_81_label_43
 sw t2 -20(t6)
 mv s3 a3
 mv s5 s0
@@ -965,14 +977,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_81_label_12
-func_81_label_41 :
-addi s4 s2 1
-mv s0 s4
+func_81_label_43 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_81_label_4
-func_81_label_44 :
+func_81_label_48 :
 li a0 0
 addi sp t5 -4
 lw s0 -4(sp)
@@ -1043,7 +1059,7 @@ li s4 1
 blt s2 s3 func_73_label_9
 li s4 0
 func_73_label_9 :
-beq s4 zero func_73_label_46
+beq s4 zero func_73_label_50
 li s2 0
 mv s1 s2
 func_73_label_12 :
@@ -1054,7 +1070,7 @@ li s4 1
 blt s2 s3 func_73_label_17
 li s4 0
 func_73_label_17 :
-beq s4 zero func_73_label_43
+beq s4 zero func_73_label_45
 sw t2 -16(t6)
 mv s3 a4
 mv s5 s0
@@ -1082,14 +1098,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_73_label_12
-func_73_label_43 :
-addi s4 s2 1
-mv s0 s4
+func_73_label_45 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_73_label_4
-func_73_label_46 :
+func_73_label_50 :
 li a0 0
 addi sp t5 -8
 lw s0 -4(sp)
@@ -1160,7 +1180,7 @@ li s4 1
 blt s2 s3 func_65_label_9
 li s4 0
 func_65_label_9 :
-beq s4 zero func_65_label_46
+beq s4 zero func_65_label_50
 li s2 0
 mv s1 s2
 func_65_label_12 :
@@ -1171,7 +1191,7 @@ li s4 1
 blt s2 s3 func_65_label_17
 li s4 0
 func_65_label_17 :
-beq s4 zero func_65_label_43
+beq s4 zero func_65_label_45
 sw t2 -16(t6)
 mv s3 a4
 mv s5 s0
@@ -1199,14 +1219,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_65_label_12
-func_65_label_43 :
-addi s4 s2 1
-mv s0 s4
+func_65_label_45 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_65_label_4
-func_65_label_46 :
+func_65_label_50 :
 li a0 0
 addi sp t5 -8
 lw s0 -4(sp)
@@ -1277,7 +1301,7 @@ li s4 1
 blt s2 s3 func_57_label_9
 li s4 0
 func_57_label_9 :
-beq s4 zero func_57_label_46
+beq s4 zero func_57_label_50
 li s2 0
 mv s1 s2
 func_57_label_12 :
@@ -1288,7 +1312,7 @@ li s4 1
 blt s2 s3 func_57_label_17
 li s4 0
 func_57_label_17 :
-beq s4 zero func_57_label_43
+beq s4 zero func_57_label_45
 sw t2 -16(t6)
 mv s3 a4
 mv s5 s0
@@ -1316,14 +1340,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_57_label_12
-func_57_label_43 :
-addi s4 s2 1
-mv s0 s4
+func_57_label_45 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_57_label_4
-func_57_label_46 :
+func_57_label_50 :
 li a0 0
 addi sp t5 -8
 lw s0 -4(sp)
@@ -1394,7 +1422,7 @@ li s4 1
 blt s2 s3 func_49_label_9
 li s4 0
 func_49_label_9 :
-beq s4 zero func_49_label_46
+beq s4 zero func_49_label_50
 li s2 0
 mv s1 s2
 func_49_label_12 :
@@ -1405,7 +1433,7 @@ li s4 1
 blt s2 s3 func_49_label_17
 li s4 0
 func_49_label_17 :
-beq s4 zero func_49_label_43
+beq s4 zero func_49_label_45
 sw t2 -16(t6)
 mv s3 a4
 mv s5 s0
@@ -1433,14 +1461,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_49_label_12
-func_49_label_43 :
-addi s4 s2 1
-mv s0 s4
+func_49_label_45 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_49_label_4
-func_49_label_46 :
+func_49_label_50 :
 li a0 0
 addi sp t5 -8
 lw s0 -4(sp)
@@ -1512,7 +1544,7 @@ li s5 1
 blt s3 s4 func_38_label_10
 li s5 0
 func_38_label_10 :
-beq s5 zero func_38_label_90
+beq s5 zero func_38_label_96
 li s3 0
 mv s1 s3
 func_38_label_13 :
@@ -1523,7 +1555,7 @@ li s5 1
 blt s3 s4 func_38_label_18
 li s5 0
 func_38_label_18 :
-beq s5 zero func_38_label_87
+beq s5 zero func_38_label_91
 li s3 0
 fcvt.s.w fs0 s3
 sw t2 -16(t6)
@@ -1548,7 +1580,7 @@ li s5 1
 blt s3 s4 func_38_label_38
 li s5 0
 func_38_label_38 :
-beq s5 zero func_38_label_84
+beq s5 zero func_38_label_86
 sw t2 -16(t6)
 mv s4 a4
 mv s6 s0
@@ -1599,18 +1631,24 @@ li s7 4
 mul s6 s6 s7
 add s4 s4 s6
 fsw fs0 0(s4)
-addi s5 s3 1
-mv s2 s5
+mv s3 s2
+li s4 1
+add s3 s3 s4
+mv s2 s3
 j func_38_label_33
-func_38_label_84 :
-addi s5 s3 1
-mv s1 s5
+func_38_label_86 :
+mv s3 s1
+li s4 1
+add s3 s3 s4
+mv s1 s3
 j func_38_label_13
-func_38_label_87 :
-addi s5 s3 1
-mv s0 s5
+func_38_label_91 :
+mv s3 s0
+li s4 1
+add s3 s3 s4
+mv s0 s3
 j func_38_label_5
-func_38_label_90 :
+func_38_label_96 :
 li a0 0
 addi sp t5 -12
 lw s0 -4(sp)
@@ -1682,7 +1720,7 @@ li s5 1
 blt s3 s4 func_27_label_10
 li s5 0
 func_27_label_10 :
-beq s5 zero func_27_label_78
+beq s5 zero func_27_label_84
 li s3 0
 mv s1 s3
 func_27_label_13 :
@@ -1693,7 +1731,7 @@ li s5 1
 blt s3 s4 func_27_label_18
 li s5 0
 func_27_label_18 :
-beq s5 zero func_27_label_75
+beq s5 zero func_27_label_79
 li s3 0
 mv s2 s3
 func_27_label_21 :
@@ -1704,7 +1742,7 @@ li s5 1
 blt s3 s4 func_27_label_26
 li s5 0
 func_27_label_26 :
-beq s5 zero func_27_label_72
+beq s5 zero func_27_label_74
 sw t2 -16(t6)
 mv s4 a4
 mv s6 s0
@@ -1755,18 +1793,24 @@ li s7 4
 mul s6 s6 s7
 add s4 s4 s6
 fsw fs1 0(s4)
-addi s5 s3 1
-mv s2 s5
+mv s3 s2
+li s4 1
+add s3 s3 s4
+mv s2 s3
 j func_27_label_21
-func_27_label_72 :
-addi s5 s3 1
-mv s1 s5
+func_27_label_74 :
+mv s3 s1
+li s4 1
+add s3 s3 s4
+mv s1 s3
 j func_27_label_13
-func_27_label_75 :
-addi s5 s3 1
-mv s0 s5
+func_27_label_79 :
+mv s3 s0
+li s4 1
+add s3 s3 s4
+mv s0 s3
 j func_27_label_5
-func_27_label_78 :
+func_27_label_84 :
 li a0 0
 addi sp t5 -12
 lw s0 -4(sp)
@@ -1837,7 +1881,7 @@ li s4 1
 blt s2 s3 func_19_label_9
 li s4 0
 func_19_label_9 :
-beq s4 zero func_19_label_55
+beq s4 zero func_19_label_59
 li s2 0
 mv s1 s2
 func_19_label_12 :
@@ -1848,7 +1892,7 @@ li s4 1
 blt s2 s3 func_19_label_17
 li s4 0
 func_19_label_17 :
-beq s4 zero func_19_label_52
+beq s4 zero func_19_label_54
 sw t2 -20(t6)
 mv s3 a3
 mv s5 s0
@@ -1886,14 +1930,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_19_label_12
-func_19_label_52 :
-addi s4 s2 1
-mv s0 s4
+func_19_label_54 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_19_label_4
-func_19_label_55 :
+func_19_label_59 :
 li a0 0
 addi sp t5 -8
 lw s0 -4(sp)
@@ -1964,7 +2012,7 @@ li s4 1
 blt s2 s3 func_11_label_9
 li s4 0
 func_11_label_9 :
-beq s4 zero func_11_label_55
+beq s4 zero func_11_label_59
 li s2 0
 mv s1 s2
 func_11_label_12 :
@@ -1975,7 +2023,7 @@ li s4 1
 blt s2 s3 func_11_label_17
 li s4 0
 func_11_label_17 :
-beq s4 zero func_11_label_52
+beq s4 zero func_11_label_54
 sw t2 -20(t6)
 mv s3 a3
 mv s5 s0
@@ -2013,14 +2061,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_11_label_12
-func_11_label_52 :
-addi s4 s2 1
-mv s0 s4
+func_11_label_54 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_11_label_4
-func_11_label_55 :
+func_11_label_59 :
 li a0 0
 addi sp t5 -8
 lw s0 -4(sp)
@@ -2091,7 +2143,7 @@ li s4 1
 blt s2 s3 func_4_label_9
 li s4 0
 func_4_label_9 :
-beq s4 zero func_4_label_44
+beq s4 zero func_4_label_48
 li s2 0
 mv s1 s2
 func_4_label_12 :
@@ -2102,7 +2154,7 @@ li s4 1
 blt s2 s3 func_4_label_17
 li s4 0
 func_4_label_17 :
-beq s4 zero func_4_label_41
+beq s4 zero func_4_label_43
 sw t2 -20(t6)
 mv s3 a3
 mv s5 s0
@@ -2127,14 +2179,18 @@ li s6 4
 mul s5 s5 s6
 add s3 s3 s5
 fsw fs1 0(s3)
-addi s4 s2 1
-mv s1 s4
+mv s2 s1
+li s3 1
+add s2 s2 s3
+mv s1 s2
 j func_4_label_12
-func_4_label_41 :
-addi s4 s2 1
-mv s0 s4
+func_4_label_43 :
+mv s2 s0
+li s3 1
+add s2 s2 s3
+mv s0 s2
 j func_4_label_4
-func_4_label_44 :
+func_4_label_48 :
 li a0 0
 addi sp t5 -4
 lw s0 -4(sp)
