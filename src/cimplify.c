@@ -689,9 +689,10 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 		uint is_floats[depth];
 		int i = 0;
 		for (tree iter = arg_list; iter != NULL; iter = TREE_CHAIN(iter)) {
+			tree arg = TREE_TYPE(iter);
 			regs[i] = push_anon_reg();
-			cimplify_expr(func, TREE_TYPE(iter), regs[i]);
-			is_floats[i] = is_real(TREE_TYPE(iter));
+			cimplify_expr(func, arg, regs[i]);
+			is_floats[i] = is_real(TREE_TYPE(arg));
 			i++;
 		}
 		for (int i = depth - 1; i >= 0; i--) {
