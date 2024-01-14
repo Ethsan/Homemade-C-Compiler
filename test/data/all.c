@@ -83,23 +83,22 @@ int main()
 	printf("\n");
 
 	printf("test for while\n");
-	n = 0;
-        printint(n);
+	a = 0;
 	for (i = 0; i < 80; i++) {
-		n++;
+		a++;
 	}
-	printf("for i<80 n = ");
-	printint(n);
+	printf("for i<80 a = ");
+	printint(a);
 	printf("\n");
-	n = 0;
+	a = 0;
 	i = 0;
 
 	while (i < 50) {
-		n++;
+		a++;
 		i++;
 	}
-	printf("while i<50 n = ");
-	printint(n);
+	printf("while i<50 a = ");
+	printint(a);
 	printf("\n");
 
 	printf("test opération sur les entiers\n");
