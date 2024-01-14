@@ -11,13 +11,12 @@
 ../main -o out/op_float.s data/op_float.c
 # op if (&&, ||, !)
 ../main -o out/if_op.s data/if_op.c
-
-# if < > <= >= == != + float
+# if < > <= >= == != + float + if else
 ../main -o out/if_op2.s data/if_op2.c
-# if else
 # while for
 ../main -o out/while_for.s data/while_for.c
 # tableaux multi-dimensionnels entiers et floats
+../main -o out/tab.s data/tab.c
 # matice
 # fonctions
 # fonctions avec plus de 8 parametres
