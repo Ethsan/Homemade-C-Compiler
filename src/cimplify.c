@@ -456,6 +456,8 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 				.ret = ret,
 				.scope_1 = CIMPLE_LOCAL,
 				.arg1 = reg,
+				.scope_2 = CIMPLE_LOCAL,
+				.arg2 = ret,
 			};
 			struct cimple_instr instr2 = {
 				.op = OP_CONVERT_BOOL,
@@ -485,6 +487,8 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 				.ret = ret,
 				.scope_1 = CIMPLE_LOCAL,
 				.arg1 = reg,
+				.scope_2 = CIMPLE_LOCAL,
+				.arg2 = ret,
 			};
 			struct cimple_instr instr2 = {
 				.op = OP_CONVERT_BOOL,
