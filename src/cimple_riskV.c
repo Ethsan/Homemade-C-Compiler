@@ -62,7 +62,6 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 			for (int j = 0; j < 3; j++) {
 				if (var[j] != -1) {
 					if (is_in(manager->register_float, 12, var[j], &index)) {
-						printf("var_use %d\n", index);
 						var_use[index] = 1;
 					}
 					
@@ -75,7 +74,6 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 			for (int j = 0; j < 3; j++) {
 				if (var[j] != -1) {
 					if (is_in(manager->register_int, 12, var[j], &index)) {
-						printf("var_use %d\n", index);
 						var_use[index] = 1;
 					}
 				}
@@ -91,7 +89,6 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 		if (count_zero == 0) {
 			// on prend le registre qui sera utilisé le plus tard
 			*index_var_less_used = index;
-			printf("index %d\n", index);
 			if (var_is_float == 1)
 				return manager->register_float[index];
 			else
@@ -101,7 +98,6 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 	int index = -1;
 	if (is_in(var_use, 12, 0, &index)) {
 		*index_var_less_used = index;
-		printf("index %d\n", index);
 		if (var_is_float == 1)
 			return manager->register_float[index];
 		else
@@ -1140,7 +1136,6 @@ void label_used(struct cimple_function cimple_func, int **label_use, int *nb_lab
 					(*nb_float)++;
 				}
 			} else {
-				printf("%d %d\n", *nb_int, instruction.ret);
 				if (!is_in(*int_used, *nb_int, instruction.ret, NULL)) {
 					if (*nb_int > alloc_int) {
 						*int_used = realloc(*int_used, (*nb_int + 1000) * sizeof(int));
@@ -1210,9 +1205,6 @@ int process_cimple(struct cimple_program program, FILE *fp)
 		manager.current_inst_index = 0;
 		manager.global_manager = NULL;
 
-		printf("nb_int %d nb_float %d labeluse %x\n", var_int, var_float, label_use);
-		for (int i = 0; i < var_int; i++)
-			printf("%d ", int_used[i]);
 		for (int i = 0; i < (int)func.size; i++) {
 			struct cimple_instr instruction = func.instrs[i];
 			if (is_in(label_use, nb_label, i, NULL)) {
