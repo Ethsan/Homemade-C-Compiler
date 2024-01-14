@@ -891,10 +891,10 @@ void cimplify_if(struct cimple_function *func, tree stmt)
 			.scope_ret = CIMPLE_UID,
 			.ret = 0, // Not defined yet
 		};
-		func->instrs[cond_idx].ret = pc;
 		int jmp_idx = cimple_push_instr(func, jmp_instr);
+		func->instrs[cond_idx].ret = pc;
 		cimplify_stmt(func, els);
-		func->instrs[jmp_idx].arg1 = pc;
+		func->instrs[jmp_idx].ret = pc;
 	}
 }
 
