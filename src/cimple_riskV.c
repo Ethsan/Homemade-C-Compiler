@@ -1156,7 +1156,7 @@ int process_cimple(struct cimple_program program, FILE *fp)
 	for (int i = 0; i < (int)program.decl_size; i++) {
 		struct cimple_string string = program.decls[i];
 		fprintf(fp, "decl_%d : \n", string.uid);
-		fprintf(fp, ".asciiz \"%s\"\n", string.str);
+		fprintf(fp, ".asciz \"%s\"\n", string.str);
 	}
 	fprintf(fp, ".text\n");
 
