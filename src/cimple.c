@@ -48,7 +48,7 @@ int cimple_push_instr(struct cimple_function *func, struct cimple_instr instr)
 	return index;
 }
 
-struct cimple_function *cimple_new_function(struct cimple_program *prog)
+struct cimple_function *cimple_new_function(struct cimple_program *prog, uint uid)
 {
 	void *tmp = realloc(prog->funcs, (prog->func_size + 1) * sizeof(struct cimple_function));
 	if (tmp == NULL)
@@ -56,7 +56,7 @@ struct cimple_function *cimple_new_function(struct cimple_program *prog)
 
 	prog->funcs = tmp;
 	struct cimple_function *func = &prog->funcs[prog->func_size++];
-	func->uid = prog->func_size;
+	func->uid = uid;
 	func->size = 0;
 	func->capacity = 0;
 	func->instrs = NULL;

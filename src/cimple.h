@@ -100,7 +100,7 @@ void cimple_free_program(struct cimple_program *prog);
 
 int cimple_push_instr(struct cimple_function *func, struct cimple_instr instr);
 
-struct cimple_function *cimple_new_function(struct cimple_program *prog);
+struct cimple_function *cimple_new_function(struct cimple_program *prog, uint uid);
 
 void cimple_new_string(struct cimple_program *prog, const char *str);
 

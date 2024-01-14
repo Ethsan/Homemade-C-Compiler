@@ -876,7 +876,9 @@ function_definition
 	;
 
 argument_expression_list
-	: assignement_expression
+	: assignement_expression {
+		$$ = new_node(TREE_LIST, $1);
+	}
 	| argument_expression_list COMMA assignement_expression {
 		tree t = new_node(TREE_LIST, $3);
 		$$ = chain_append($1, t);

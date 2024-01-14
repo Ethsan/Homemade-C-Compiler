@@ -62,6 +62,7 @@ int is_expr(enum tree_code code)
 	case ASSIGN_EXPR:
 	case COMPOUND_EXPR:
 	case RETURN_STMT:
+	case CALL_EXPR:
 		return 1;
 	default:
 		return 0;
@@ -669,26 +670,30 @@ tree build_deref(tree expr)
 tree build_call(tree expr, tree arg_list)
 {
 	// Do simple type checks
-	tree type = TREE_TYPE(expr);
-	if (TREE_CODE(type) != FUNCTION_TYPE)
-		errx(EXIT_FAILURE, "calling non-function type");
+	if (TREE_CODE(expr) != FUNCTION_DECL)
+		errx(EXIT_FAILURE, "calling non-function");
 
 	// Type check arguments
-	tree parm_list = TYPE_PARM_LIST(type);
-	while (parm_list != NULL && arg_list != NULL) {
-		tree parm = TREE_TYPE(parm_list);
-		tree arg = TREE_TYPE(arg_list);
+	tree parm_iter = DECL_PARM_LIST(expr);
+	tree arg_iter = arg_list;
+	while (parm_iter != NULL && arg_iter != NULL) {
+		tree parm = TREE_TYPE(parm_iter);
+		tree arg = TREE_TYPE(arg_iter);
 
-		if (!is_compatible(TREE_TYPE(parm), TREE_TYPE(arg)))
-			errx(EXIT_FAILURE, "incompatible type in argument passing");
+		if (!is_compatible(TREE_TYPE(parm), TREE_TYPE(arg))) {
+			errx(EXIT_FAILURE, "incompatible type in argument passing (%s) (%s)",
+			     tree_code_name(TREE_CODE(TREE_TYPE(parm))), tree_code_name(TREE_CODE(TREE_TYPE(arg))));
+		}
 
-		parm_list = TREE_CHAIN(parm_list);
-		arg_list = TREE_CHAIN(arg_list);
+		parm_iter = TREE_CHAIN(parm_iter);
+		arg_iter = TREE_CHAIN(arg_iter);
 	}
-	if (parm_list != NULL || arg_list != NULL)
-		errx(EXIT_FAILURE, "wrong number of arguments");
+	if (parm_iter != NULL)
+		errx(EXIT_FAILURE, "too few arguments in function call");
+	if (arg_iter != NULL)
+		errx(EXIT_FAILURE, "too many arguments in function call");
 
-	tree node = new_node(CALL_EXPR, TREE_TYPE(type));
+	tree node = new_node(CALL_EXPR, TREE_TYPE(expr));
 	EXPR_OPERAND(node, 0) = expr;
 	EXPR_OPERAND(node, 1) = arg_list;
 
@@ -1032,7 +1037,8 @@ tree build_assign_expr(enum tree_code code, tree left, tree right)
 	tree rtype = TREE_TYPE(right);
 
 	if (!is_compatible(ltype, rtype))
-		errx(EXIT_FAILURE, "incompatible types in assignment");
+		errx(EXIT_FAILURE, "incompatible types in assignment (%s) (%s)", tree_code_name(TREE_CODE(left)),
+		     tree_code_name(TREE_CODE(right)));
 
 	right = implicit_cast(ltype, right);
 
@@ -1096,8 +1102,10 @@ tree build_expr(enum tree_code code, tree left, tree right)
 		return build_assign_expr(code, left, right);
 	case COMPOUND_EXPR:
 		return build_compound_expr(left, right);
+	case CALL_EXPR:
+		return build_call(left, right);
 	default:
-		errx(EXIT_FAILURE, "unexpected: unknown expression");
+		errx(EXIT_FAILURE, "unexpected: unknown expression %s", tree_code_name(code));
 	}
 }
 

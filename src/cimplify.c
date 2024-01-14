@@ -4,6 +4,7 @@
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Use a program counter to generate unique ID for operation
 uint pc = 0;
@@ -40,6 +41,18 @@ uint get_named_reg(uint uid)
 			return i;
 	}
 	return UINT32_MAX;
+}
+
+struct {
+	uint uids[1000];
+	int off;
+} func_uid;
+
+uint push_named_func(uint uid)
+{
+	int idx = func_uid.off++;
+	func_uid.uids[idx] = uid;
+	return idx;
 }
 
 union s {
@@ -650,14 +663,15 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 	}
 	case CALL_EXPR: {
 		int depth = 0;
-		tree parm_list = EXPR_OPERAND(expr, 1);
-		for (tree iter = parm_list; iter != NULL; iter = TREE_CHAIN(iter)) {
+		tree arg_list = EXPR_OPERAND(expr, 1);
+		warnx("%s", tree_code_name(TREE_CODE(arg_list)));
+		for (tree iter = arg_list; iter != NULL; iter = TREE_CHAIN(iter)) {
 			depth++;
 		}
 		uint regs[depth];
 		uint is_floats[depth];
 		int i = 0;
-		for (tree iter = parm_list; iter != NULL; iter = TREE_CHAIN(iter)) {
+		for (tree iter = arg_list; iter != NULL; iter = TREE_CHAIN(iter)) {
 			regs[i] = push_anon_reg();
 			cimplify_expr(func, TREE_TYPE(iter), regs[i]);
 			is_floats[i] = is_real(TREE_TYPE(iter));
@@ -669,7 +683,8 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 				.uid = pc++,
 				.scope_1 = CIMPLE_LOCAL,
 				.arg1 = regs[i],
-
+				.scope_2 = CIMPLE_CONST,
+				.arg2 = i,
 				.is_float = is_floats[i],
 			};
 			cimple_push_instr(func, instr);
@@ -685,6 +700,8 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.ret = ret,
 			.scope_1 = CIMPLE_UID,
 			.arg1 = DECL_UID(decl),
+			.scope_2 = CIMPLE_CONST,
+			.arg2 = depth,
 		};
 		cimple_push_instr(func, instr);
 		break;
@@ -1047,18 +1064,83 @@ void cimplify_block(struct cimple_function *func, tree block)
 	}
 }
 
+#define PRIMITIVES_COUNT 1
+#define PRINTF "printf"
+
+struct {
+	tree ident;
+	uint ecall;
+} primitives[PRIMITIVES_COUNT];
+
+void init_builtins()
+{
+	primitives[0].ident = get_identifier(PRINTF, strlen(PRINTF));
+	primitives[0].ecall = 10;
+}
+
+void decl_builtin(struct cimple_program *prog, uint ecall, tree decl)
+{
+	pc = 0;
+
+	struct cimple_function *func = cimple_new_function(prog, DECL_UID(decl));
+
+	int arg_count = 0;
+	for (tree iter = TREE_TYPE(decl); iter != NULL; iter = TREE_CHAIN(iter)) {
+		arg_count++;
+	}
+
+	for (int i = arg_count - 1; i >= 0; i--) {
+		struct cimple_instr instr = {
+			.op = OP_PARAM,
+			.uid = pc++,
+			.scope_1 = CIMPLE_ARG,
+			.arg1 = i,
+			.scope_2 = CIMPLE_CONST,
+			.arg2 = i,
+		};
+		cimple_push_instr(func, instr);
+	}
+
+	struct cimple_instr instr = {
+		.op = OP_SYSCALL,
+		.uid = pc++,
+		.scope_ret = CIMPLE_LOCAL,
+		.ret = 0,
+		.scope_1 = CIMPLE_CONST,
+		.arg1 = ecall,
+		.scope_2 = CIMPLE_CONST,
+		.arg2 = arg_count,
+	};
+	cimple_push_instr(func, instr);
+	struct cimple_instr ret = {
+		.op = OP_RETURN,
+		.uid = pc++,
+		.scope_1 = CIMPLE_LOCAL,
+		.arg1 = 0,
+	};
+	cimple_push_instr(func, ret);
+}
+
 void cimplify_function(struct cimple_program *prog, tree func)
 {
 	if (TREE_CODE(func) != FUNCTION_DECL)
 		errx(EXIT_FAILURE, "cimplify_function: not a function");
-	if (DECL_BODY(func) == NULL)
-		errx(EXIT_FAILURE, "cimplify_function: function has no definition");
+	if (DECL_BODY(func) == NULL) {
+		tree ident = DECL_NAME(func);
+		for (int i = 0; i < PRIMITIVES_COUNT; i++) {
+			if (primitives[i].ident == ident) {
+				decl_builtin(prog, primitives[i].ecall, func);
+				return;
+			}
+		}
+		errx(EXIT_FAILURE, "cimplify_function: function without body");
+	}
 
 	pc = 0;
 	stack.off = 0;
 	current_func = func;
 
-	struct cimple_function *cfunc = cimple_new_function(prog);
+	struct cimple_function *cfunc = cimple_new_function(prog, DECL_UID(func));
 	tree block = DECL_BODY(func);
 
 	cimplify_block(cfunc, block);
@@ -1077,6 +1159,8 @@ void cimplify_function(struct cimple_program *prog, tree func)
 struct cimple_program *cimplify(tree root)
 {
 	struct cimple_program *prog = cimple_new_program();
+
+	init_builtins();
 
 	for (tree var = BLOCK_VARS(root); var != NULL; var = TREE_CHAIN(var)) {
 		if (TREE_CODE(var) == VARIABLE_DECL)
