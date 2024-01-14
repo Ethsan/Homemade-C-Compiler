@@ -108,6 +108,8 @@ void cimplify_return(struct cimple_function *func, tree stmt)
 		.uid = pc++,
 		.scope_1 = CIMPLE_LOCAL,
 		.arg1 = reg,
+
+		.is_float = is_real(TREE_TYPE(expr)),
 	};
 	cimple_push_instr(func, instr);
 	pop_reg();
@@ -307,7 +309,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.ret = ret,
 			.scope_1 = CIMPLE_CONST,
 			.arg1 = REAL_VALUE(expr),
-			.is_float = 1,
+			.is_float = is_float,
 		};
 		cimple_push_instr(func, instr);
 		break;
@@ -355,7 +357,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.scope_2 = CIMPLE_LOCAL,
 			.arg2 = reg,
 
-			.is_float = 1,
+			.is_float = is_float,
 		};
 		cimple_push_instr(func, instr);
 		pop_reg();
@@ -375,7 +377,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.scope_2 = CIMPLE_LOCAL,
 			.arg2 = reg,
 
-			.is_float = 1,
+			.is_float = is_float,
 		};
 		cimple_push_instr(func, instr);
 		pop_reg();
@@ -395,7 +397,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.scope_2 = CIMPLE_LOCAL,
 			.arg2 = reg,
 
-			.is_float = 1,
+			.is_float = is_float,
 		};
 		cimple_push_instr(func, instr);
 		pop_reg();
@@ -415,7 +417,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.scope_2 = CIMPLE_LOCAL,
 			.arg2 = reg,
 
-			.is_float = 1,
+			.is_float = is_float,
 		};
 		cimple_push_instr(func, instr);
 		pop_reg();
@@ -727,7 +729,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.uid = pc++,
 			.scope_ret = CIMPLE_LOCAL,
 			.ret = ret,
-			.scope_1 = CIMPLE_CONST,
+			.scope_1 = CIMPLE_LOCAL,
 			.arg1 = get_named_reg(DECL_UID(expr)),
 			.is_float = is_float,
 		};
