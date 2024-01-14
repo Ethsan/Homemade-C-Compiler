@@ -450,7 +450,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			uint reg = push_anon_reg();
 			cimplify_expr(func, EXPR_OPERAND(expr, 1), reg);
 			struct cimple_instr instr = {
-				.op = OP_XOR,
+				.op = OP_AND,
 				.uid = pc++,
 				.scope_ret = CIMPLE_LOCAL,
 				.ret = ret,
@@ -468,12 +468,14 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 				.arg1 = ret,
 			};
 			struct cimple_instr instr3 = {
-				.op = OP_NOT,
+				.op = OP_XOR,
 				.uid = pc++,
 				.scope_ret = CIMPLE_LOCAL,
 				.ret = ret,
 				.scope_1 = CIMPLE_LOCAL,
 				.arg1 = ret,
+				.scope_2 = CIMPLE_CONST,
+				.arg2 = 1,
 			};
 			cimple_push_instr(func, instr);
 			cimple_push_instr(func, instr2);
