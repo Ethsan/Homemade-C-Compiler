@@ -2,14 +2,20 @@ int printint(int i);
 
 int main()
 {
-	int a, i;
+	int a,i;
 	a = 0;
+	for ( i = 0; i < 80; i++ ) {
+		a++;
+	}
+
         i = 0;
-	while( i < 10 ){
 
+        while ( i < 50 ) {
                 a++;
+                i++;
         }
-	printint(a);
+        printint(a);
 
-	return 0;
+	
+        return 0;
 }
