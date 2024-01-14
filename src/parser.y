@@ -138,7 +138,7 @@ primary_expression
 postfix_expression
 	: primary_expression
 	| postfix_expression LBRACKET expression RBRACKET {
-		$$ = build_unary_expr(INDIRECT_REF, build_expr(ADD_EXPR, $1, $3));
+		$$ = build_array_ref($1, $3);
 	}
 	| postfix_expression LPAREN RPAREN {
 		$$ = build_expr(CALL_EXPR, $1, NULL);

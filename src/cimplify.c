@@ -308,7 +308,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.scope_ret = CIMPLE_LOCAL,
 			.ret = ret,
 			.scope_1 = CIMPLE_CONST,
-			.arg1 = REAL_VALUE(expr),
+			.farg1 = REAL_VALUE(expr),
 			.is_float = is_float,
 		};
 		cimple_push_instr(func, instr);
@@ -1106,37 +1106,55 @@ struct {
 void init_builtins()
 {
 	primitives[0].ident = get_identifier(PRINTF, strlen(PRINTF));
-	primitives[0].ecall = 10;
+	primitives[0].ecall = 4;
 }
 
 void decl_builtin(struct cimple_program *prog, uint ecall, tree decl)
 {
 	pc = 0;
+	stack.off = 0;
 
 	struct cimple_function *func = cimple_new_function(prog, DECL_UID(decl));
 
 	int arg_count = 0;
+	uint tmp = push_anon_reg();
 	for (tree iter = TREE_TYPE(decl); iter != NULL; iter = TREE_CHAIN(iter)) {
 		arg_count++;
+	}
+
+	uint regs[arg_count];
+
+	for (int i = 0; i < arg_count; i++) {
+		regs[i] = push_anon_reg();
+		struct cimple_instr instr = {
+			.op = OP_PARAM,
+			.uid = pc++,
+			.scope_ret = CIMPLE_LOCAL,
+			.ret = regs[i],
+			.scope_1 = CIMPLE_ARG,
+			.arg1 = i,
+		};
+		cimple_push_instr(func, instr);
 	}
 
 	for (int i = arg_count - 1; i >= 0; i--) {
 		struct cimple_instr instr = {
 			.op = OP_PARAM,
 			.uid = pc++,
-			.scope_1 = CIMPLE_ARG,
-			.arg1 = i,
+			.scope_1 = CIMPLE_LOCAL,
+			.arg1 = regs[i],
 			.scope_2 = CIMPLE_CONST,
 			.arg2 = i,
 		};
 		cimple_push_instr(func, instr);
+		pop_reg();
 	}
 
 	struct cimple_instr instr = {
 		.op = OP_SYSCALL,
 		.uid = pc++,
 		.scope_ret = CIMPLE_LOCAL,
-		.ret = 0,
+		.ret = tmp,
 		.scope_1 = CIMPLE_CONST,
 		.arg1 = ecall,
 		.scope_2 = CIMPLE_CONST,
@@ -1147,9 +1165,10 @@ void decl_builtin(struct cimple_program *prog, uint ecall, tree decl)
 		.op = OP_RETURN,
 		.uid = pc++,
 		.scope_1 = CIMPLE_LOCAL,
-		.arg1 = 0,
+		.arg1 = tmp,
 	};
 	cimple_push_instr(func, ret);
+	pop_reg();
 }
 
 void cimplify_function(struct cimple_program *prog, tree func)

@@ -354,6 +354,10 @@ tree build_unary_expr(enum tree_code code, tree node);
 
 tree build_expr(enum tree_code code, tree lhs, tree rhs);
 
+tree build_array_ref(tree array, tree index);
+
+tree build_deref(tree expr);
+
 tree build_cast(tree expr, tree type);
 
 tree build_sizeof(tree type);

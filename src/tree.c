@@ -18,6 +18,8 @@
 
 #define FLOAT_TYPE_SIZE 4
 
+#define errx(err, str, ...) errx(err, " at line %d " str, yylloc.first_line __VA_OPT__(,) __VA_ARGS__)
+
 #define X(node)    \
 	case node: \
 		return #node;
@@ -148,6 +150,19 @@ void print_ast(tree node, int indent, int is_chain)
 
 	if (TREE_CODE(node) == VARIABLE_DECL || TREE_CODE(node) == FUNCTION_DECL || TREE_CODE(node) == PARM_DECL) {
 		print_ast(DECL_NAME(node), indent + 1, 1);
+	}
+
+	if (TREE_CODE(node) == INTEGER_CST) {
+		print_indent(indent + 1);
+		printf("Value: %lu\n", INT_VALUE(node));
+	}
+	if (TREE_CODE(node) == STRING_CST) {
+		print_indent(indent + 1);
+		printf("Value: %s\n", STRING_VALUE(node));
+	}
+	if (TREE_CODE(node) == REAL_CST) {
+		print_indent(indent + 1);
+		printf("Value: %f\n", REAL_VALUE(node));
 	}
 
 	if (TREE_CODE(node) == BLOCK_NODE) {
@@ -658,10 +673,37 @@ tree build_deref(tree expr)
 	if (TREE_CODE(type) != PTR_TYPE && TREE_CODE(type) != ARRAY_TYPE)
 		errx(EXIT_FAILURE, "dereferencing non-pointer type");
 
+	while (TREE_CODE(type) == ARRAY_TYPE)
+		type = TREE_TYPE(type);
+
 	tree node = new_node(INDIRECT_REF, TREE_TYPE(type));
 	EXPR_OPERAND(node, 0) = expr;
 
 	if (TREE_IS_CONSTANT(expr))
+		TREE_SET_CONSTANT(node);
+
+	return node;
+}
+
+tree build_array_ref(tree expr, tree index)
+{
+	// Do simple type checks
+	tree type = TREE_TYPE(expr);
+	if (TREE_CODE(type) != ARRAY_TYPE)
+		errx(EXIT_FAILURE, "dereferencing non-array type");
+
+	tree node;
+	tree type_of_array = TREE_TYPE(type);
+	if (TREE_CODE(type_of_array) == ARRAY_TYPE) {
+		node = build_expr(ADD_EXPR, expr, index);
+		TREE_TYPE(node) = type_of_array;
+	} else {
+		tree add = build_expr(ADD_EXPR, expr, index);
+		TREE_TYPE(add) = new_node(PTR_TYPE, type_of_array);
+		node = build_deref(add);
+	}
+
+	if (TREE_IS_CONSTANT(expr) && TREE_IS_CONSTANT(index))
 		TREE_SET_CONSTANT(node);
 
 	return node;
