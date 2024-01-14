@@ -1195,6 +1195,9 @@ void start_while(tree cond)
 {
 	tree node = new_node(WHILE_STMT, NULL);
 	ITER_COND(node) = cond;
+
+	tree list = new_node(TREE_LIST, node);
+	iter_context = chain_append(list, iter_context);
 }
 
 tree end_while(tree body)
