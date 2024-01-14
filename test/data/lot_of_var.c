@@ -1,6 +1,7 @@
 int main()
 {
 	int a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z;
+        float fa, fb, fc, fd, fe, ff, fg, fh, fi, fj, fk, fl, fm, fn, fo, fp, fq, fr, fs, ft, fu, fv, fw, fx, fy, fz;
 	a = 1;
 	b = 2;
 	c = 3;
@@ -28,5 +29,33 @@ int main()
 	y = 25;
 	z = 26;
 	z = q + r + s + t + u + v + w + x + y;
+
+        fa = 1.0;
+        fb = 2.0;
+        fc = 3.0;
+        fd = 4.0;
+        fe = 5;
+        fo = 15.0;
+        fp = 16.0;
+        fq = 17.0;
+        fr = 18.0;
+        fs = 19.0;
+        ft = 20.0;
+        fu = 21.0;
+        ff = 6.0;
+        fg = 7.0;
+        fh = 8.0;
+        fi = 9.0;
+        fj = 10.0;
+        fk = 11.0;
+        fl = 12.0;
+        fm = 13.0;
+        fn = 14.0;
+        fv = 22;
+        fw = 23.0;
+        fx = 24.0;
+        fy = 25.0;
+        fz = fq + fr + fs + ft + fu + fv;
+
 	return 0;
 }

@@ -30,6 +30,9 @@ void help(void)
 void version(void)
 {
 	fprintf(stdout, "Version 0.0.7\n");
+	fprintf(stdout, "Authors:\n");
+	fprintf(stdout, "\t- MILON Ethan\n");
+	fprintf(stdout, "\t- LE BERRE Clément\n");
 }
 
 void init_args(args_t *args)

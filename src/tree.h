@@ -322,6 +322,8 @@ union tree_node {
 	struct tree_iter iter;
 };
 
+void dump_symbol_table();
+
 tree new_node(enum tree_code code, tree type);
 
 tree chain_append(tree chain, tree node);

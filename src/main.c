@@ -7,7 +7,6 @@
 
 extern int yyparse(void);
 extern FILE *yyin;
-
 extern tree current_context;
 
 /*void cimple_test(struct cimple_program *prog)
@@ -68,9 +67,14 @@ int main(int argc, char *argv[])
 	}
 	yyin = in;
 	yyparse();
-	print_current_context();
+	
+	if (args.print_ast)
+		print_current_context();
+	if (args.print_symbol_table)
+		dump_symbol_table();
 	struct cimple_program *prog = cimplify(current_context);
-	cimple_dump_program(prog);
+	if (args.print_cimple)
+		cimple_dump_program(prog);
 	FILE *out = fopen("out.s", "w");
 	if (out == NULL) {
 		fprintf(stderr, "Error: cannot open file out.s\n");

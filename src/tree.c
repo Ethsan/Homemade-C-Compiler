@@ -71,6 +71,10 @@ int is_expr(enum tree_code code)
 	}
 }
 
+void dump_symbol_table(){
+	return;
+}
+
 void print_indent(int indent)
 {
 	for (int i = 0; i < indent; i++)
