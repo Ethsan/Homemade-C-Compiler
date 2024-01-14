@@ -1,3 +1,4 @@
+#include "tree.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,6 +90,7 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 		if (count_zero == 0) {
 			// on prend le registre qui sera utilisé le plus tard
 			*index_var_less_used = index;
+			printf("index %d\n", index)
 			if (var_is_float == 1)
 				return manager->register_float[index];
 			else
@@ -98,6 +100,7 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 	int index = -1;
 	if (is_in(var_use, 12, 0, &index)) {
 		*index_var_less_used = index;
+		printf("index %d\n", index);
 		if (var_is_float == 1)
 			return manager->register_float[index];
 		else
