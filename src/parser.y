@@ -436,7 +436,7 @@ storage_class_specifier
 
 type_specifier
 	: VOID { $$ = new_node(VOID_TYPE, NULL); }
-	| CHAR { $$ = new_node(CHAR_TYPE, NULL); }
+	| CHAR { $$ = new_node(INT_TYPE, NULL); }
 	| SHORT { ERROR("SHORT not implemented"); }
 	| INT { $$ = new_node(INT_TYPE, NULL); }
 	| LONG { ERROR("LONG not implemented"); }

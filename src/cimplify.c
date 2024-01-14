@@ -11,6 +11,8 @@ uint pc = 0;
 
 tree current_func = NULL;
 
+struct cimple_program *current_prog = NULL;
+
 // Use a stack to keep track of temporaries
 struct {
 	uint uids[1000];
@@ -306,6 +308,19 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.scope_1 = CIMPLE_CONST,
 			.arg1 = REAL_VALUE(expr),
 			.is_float = 1,
+		};
+		cimple_push_instr(func, instr);
+		break;
+	}
+	case STRING_CST: {
+		int str_uid = cimple_new_string(current_prog, STRING_VALUE(expr));
+		struct cimple_instr instr = {
+			.op = OP_ASSIGN,
+			.uid = pc++,
+			.scope_ret = CIMPLE_LOCAL,
+			.ret = ret,
+			.scope_1 = CIMPLE_TEXT,
+			.arg1 = str_uid,
 		};
 		cimple_push_instr(func, instr);
 		break;
@@ -1159,6 +1174,7 @@ void cimplify_function(struct cimple_program *prog, tree func)
 struct cimple_program *cimplify(tree root)
 {
 	struct cimple_program *prog = cimple_new_program();
+	current_prog = prog;
 
 	init_builtins();
 

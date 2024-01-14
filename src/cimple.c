@@ -63,7 +63,7 @@ struct cimple_function *cimple_new_function(struct cimple_program *prog, uint ui
 	return func;
 }
 
-void cimple_new_string(struct cimple_program *prog, const char *str)
+uint cimple_new_string(struct cimple_program *prog, const char *str)
 {
 	void *tmp = realloc(prog->decls, (prog->decl_size + 1) * sizeof(struct cimple_string));
 	if (tmp == NULL)
@@ -74,6 +74,8 @@ void cimple_new_string(struct cimple_program *prog, const char *str)
 	new_str->uid = prog->decl_size;
 	new_str->size = strlen(str);
 	new_str->str = strdup(str);
+
+	return new_str->uid;
 }
 
 void cimple_print_reg(enum cimple_scope type, uint value)
@@ -212,6 +214,10 @@ void cimple_print_instr(struct cimple_instr *instr)
 void cimple_dump_program(struct cimple_program *prog)
 {
 	printf("Program:\n");
+	for (uint32_t i = 0; i < prog->decl_size; i++) {
+		struct cimple_string *str = &prog->decls[i];
+		printf("String %u: %s\n", str->uid, str->str);
+	}
 	for (uint32_t i = 0; i < prog->func_size; i++) {
 		struct cimple_function *func = &prog->funcs[i];
 		printf("Function %u:\n", func->uid);
