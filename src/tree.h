@@ -163,6 +163,9 @@ struct tree_common {
 	uint is_extern : 1;
 	uint is_static : 1;
 	uint is_signed : 1;
+	uint is_lang1 : 1;
+	uint is_lang2 : 1;
+	uint is_lang3 : 1;
 };
 
 #define ID_NAME(node) ((node)->identifier.name)
@@ -423,3 +426,5 @@ tree get_base_type(tree type);
 int is_real(tree type);
 
 int get_array_len(tree type);
+
+tree new_integer(uint64_t value);

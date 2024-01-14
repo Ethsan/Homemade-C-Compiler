@@ -18,7 +18,7 @@
 
 #define FLOAT_TYPE_SIZE 4
 
-#define errx(err, str, ...) errx(err, " at line %d " str, yylloc.first_line __VA_OPT__(,) __VA_ARGS__)
+#define errx(err, str, ...) errx(err, " at line %d:%d " str, yylloc.first_line, yylloc.first_column __VA_OPT__(, ) __VA_ARGS__)
 
 #define X(node)    \
 	case node: \
@@ -71,7 +71,8 @@ int is_expr(enum tree_code code)
 	}
 }
 
-void dump_symbol_table(){
+void dump_symbol_table()
+{
 	return;
 }
 
@@ -124,6 +125,10 @@ void print_ast(tree node, int indent, int is_chain)
 {
 	if (node == NULL)
 		return;
+	if (indent > 20) {
+		printf("...\n");
+		return;
+	}
 
 	print_indent(indent);
 	printf("%s", tree_code_name(TREE_CODE(node)));
@@ -153,6 +158,9 @@ void print_ast(tree node, int indent, int is_chain)
 	}
 
 	if (TREE_CODE(node) == VARIABLE_DECL || TREE_CODE(node) == FUNCTION_DECL || TREE_CODE(node) == PARM_DECL) {
+		if (TREE_CODE(node) == FUNCTION_DECL && indent > 2)
+			return;
+			
 		print_ast(DECL_NAME(node), indent + 1, 1);
 	}
 
@@ -275,9 +283,11 @@ tree emit_decl(tree decl)
 
 	tree id = decl->decl.name;
 
-	// Check if already defined
-	if (get_decl_in(id, current_context) != NULL)
+	// Check if already defined (skip it if anon decl)
+	if (id != NULL && get_decl_in(id, current_context) != NULL)
 		errx(EXIT_FAILURE, "redefinition of '%.*s'", ID_LEN(id), ID_NAME(id));
+	if (id == NULL) {
+	}
 
 	// Check if init is valid
 
@@ -693,12 +703,15 @@ tree build_array_ref(tree expr, tree index)
 {
 	// Do simple type checks
 	tree type = TREE_TYPE(expr);
-	if (TREE_CODE(type) != ARRAY_TYPE)
+	if (TREE_CODE(type) != ARRAY_TYPE && TREE_CODE(type) != PTR_TYPE)
 		errx(EXIT_FAILURE, "dereferencing non-array type");
 
 	tree node;
 	tree type_of_array = TREE_TYPE(type);
-	if (TREE_CODE(type_of_array) == ARRAY_TYPE) {
+	if (TREE_CODE(type) == PTR_TYPE) {
+		tree add = build_expr(ADD_EXPR, expr, index);
+		node = build_deref(add);
+	} else if (TREE_CODE(type_of_array) == ARRAY_TYPE) {
 		node = build_expr(ADD_EXPR, expr, index);
 		TREE_TYPE(node) = type_of_array;
 	} else {
@@ -717,7 +730,7 @@ tree build_call(tree expr, tree arg_list)
 {
 	// Do simple type checks
 	if (TREE_CODE(expr) != FUNCTION_DECL)
-		errx(EXIT_FAILURE, "calling non-function");
+		errx(EXIT_FAILURE, "calling non-function %s", tree_code_name(TREE_CODE(expr)));
 
 	// Type check arguments
 	tree parm_iter = DECL_PARM_LIST(expr);

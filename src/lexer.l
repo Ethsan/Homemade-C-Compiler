@@ -87,6 +87,8 @@ do		{ return DO; }
 if		{ return IF; }
 static		{ return STATIC; }
 while		{ return WHILE; }
+print_mat	{ return PRINT_MAT; }
+matrix		{ return MATRIX; }
 
 	/* Operators */
 \.	{ return DOT; }
@@ -142,6 +144,7 @@ while		{ return WHILE; }
 \;	{ return SEMICOLON; }
 \,	{ return COMMA; }
 \.\.\.	{ return ELLIPSIS; }
+\.\.	{ return RANGE; }
 
 	/* Identifiers */
 {IDENTIFIER} {

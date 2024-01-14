@@ -1,5 +1,6 @@
 %{
 #include "tree.h"
+#include "cmat_tree.h"
 
 #include <stdio.h>
 
@@ -31,7 +32,7 @@ extern int yylex(void);
 %token <tree> STRING_LITERAL
 %token <tree> TYPE_NAME
 
-%token AUTO DOUBLE INT STRUCT BREAK ELSE 
+%token AUTO DOUBLE INT STRUCT BREAK ELSE RANGE MATRIX
 %token LONG SWITCH CASE ENUM REGISTER TYPEDEF CHAR
 %token EXTERN RETURN UNION CONST FLOAT SHORT UNSIGNED
 %token CONTINUE FOR SIGNED VOID DEFAULT GOTO SIZEOF
@@ -45,7 +46,7 @@ extern int yylex(void);
 %token PERCENT_EQUAL PLUS_EQUAL MINUS_EQUAL LSHIFT_EQUAL
 %token RSHIFT_EQUAL AND_EQUAL XOR_EQUAL OR_EQUAL
 %token COLON QUESTION OR_OR AND_AND
-%token OR XOR ELLIPSIS SEMICOLON
+%token OR XOR ELLIPSIS SEMICOLON PRINT_MAT
 
 %type <tree> primary_expression
 %type <tree> postfix_expression
@@ -108,6 +109,9 @@ extern int yylex(void);
 %type <tree> function_definition
 %type <tree> argument_expression_list
 
+%type <tree> interval
+%type <tree> interval_list
+
 %type <code> assignement_operator
 %type <code> unary_operator
 
@@ -125,20 +129,47 @@ extern int yylex(void);
 primary_expression
 	: IDENTIFIER {
 		$$ = get_decl($1);
+		if ($$ == NULL) {
+			ERROR("undeclared identifier");
+		}
 	}
 	| constant
 	| STRING_LITERAL
 	| LPAREN expression RPAREN {
 		$$ = $2;
 	}
+	| PRINT_MAT LPAREN expression RPAREN {
+		$$ = cmat_build_print_mat($3);
+	}
 	;
 
 /*	1.2. Postfix expressions */
 
+interval
+	: expression {
+		$$ = $1;
+	}
+	| expression RANGE expression {
+		$$ = cmat_build_range($1, $3);
+	}
+	| STAR {
+		$$ = NULL;
+	}
+	;
+
+interval_list
+	: interval {
+		$$ = new_node(TREE_LIST, $1);
+	}
+	| interval_list SEMICOLON interval {
+		$$ = chain_append($1, new_node(TREE_LIST, $3));
+	}
+	;
+
 postfix_expression
 	: primary_expression
-	| postfix_expression LBRACKET expression RBRACKET {
-		$$ = build_array_ref($1, $3);
+	| postfix_expression LBRACKET interval_list RBRACKET {
+		$$ = cmat_build_array_ref($1, $3);
 	}
 	| postfix_expression LPAREN RPAREN {
 		$$ = build_expr(CALL_EXPR, $1, NULL);
@@ -165,10 +196,10 @@ postfix_expression
 unary_expression
 	: postfix_expression
 	| INCREMENT unary_expression {
-		$$ = build_unary_expr(PRE_INCR_EXPR, $2);
+		$$ = cmat_build_unary_expr(PRE_INCR_EXPR, $2);
 	}
 	| DECREMENT unary_expression {
-		$$ = build_unary_expr(PRE_DECR_EXPR, $2);
+		$$ = cmat_build_unary_expr(PRE_DECR_EXPR, $2);
 	}
 	| unary_operator cast_expression {
 		$$ = build_unary_expr($1, $2);
@@ -204,10 +235,10 @@ cast_expression
 multiplicative_expression
 	: cast_expression
 	| multiplicative_expression STAR cast_expression {
-		$$ = build_expr(MUL_EXPR, $1, $3);
+		$$ = cmat_build_expr(MUL_EXPR, $1, $3);
 	}
 	| multiplicative_expression SLASH cast_expression {
-		$$ = build_expr(DIV_EXPR, $1, $3);
+		$$ = cmat_build_expr(DIV_EXPR, $1, $3);
 	}
 	| multiplicative_expression PERCENT cast_expression {
 		$$ = build_expr(MOD_EXPR, $1, $3);
@@ -219,10 +250,10 @@ multiplicative_expression
 additive_expression
 	: multiplicative_expression
 	| additive_expression PLUS multiplicative_expression {
-		$$ = build_expr(ADD_EXPR, $1, $3);
+		$$ = cmat_build_expr(ADD_EXPR, $1, $3);
 	}
 	| additive_expression MINUS multiplicative_expression {
-		$$ = build_expr(SUB_EXPR, $1, $3);
+		$$ = cmat_build_expr(SUB_EXPR, $1, $3);
 	}
 	;
 
@@ -328,9 +359,9 @@ assignement_expression
 	: conditional_expression
 	| unary_expression assignement_operator assignement_expression {
 		if ($2 != NONE) {
-			$3 = build_expr($2, $1, $3);
+			$3 = cmat_build_expr($2, $1, $3);
 		}
-		$$ = build_expr(ASSIGN_EXPR, $1, $3);
+		$$ = cmat_build_expr(ASSIGN_EXPR, $1, $3);
 	}
 	;
 
@@ -442,6 +473,7 @@ type_specifier
 	| LONG { ERROR("LONG not implemented"); }
 	| FLOAT { $$ = new_node(REAL_TYPE, NULL); }
 	| DOUBLE { $$ = new_node(REAL_TYPE, NULL); }
+	| MATRIX { $$ = cmat_build_type(); }
 	| SIGNED { ERROR("SIGNED not implemented"); }
 	| UNSIGNED { ERROR("UNSIGNED not implemented"); }
 	| struct_or_union_specifier { $$ = $1; }
@@ -888,5 +920,5 @@ argument_expression_list
 %%
 
 void yyerror(const char *msg) {
-	fprintf(stderr, "Error at line %d: %s\n",yylloc.first_line, msg);
+	fprintf(stderr, "Error at line %d:%d : %s\n",yylloc.first_line, yylloc.first_column, msg);
 }

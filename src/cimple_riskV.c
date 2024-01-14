@@ -1130,7 +1130,7 @@ void label_used(struct cimple_function cimple_func, int **label_use, int *nb_lab
 		// label used
 		if (is_goto(instruction)) {
 			int goto_label = instruction.ret;
-			if (!is_in(*label_use, cimple_func.size, goto_label, NULL)) {
+			if (!is_in(*label_use, *nb_label_use, goto_label, NULL)) {
 				if (*nb_label_use > alloc_label) {
 					*label_use = realloc(*label_use, (*nb_label_use + 1000) * sizeof(int));
 					error_malloc(*label_use);
@@ -1227,6 +1227,7 @@ char *sanitize_string(char *str, int str_len)
 			break;
 		}
 	}
+	new_str[j] = '\0';
 	return new_str;
 }
 

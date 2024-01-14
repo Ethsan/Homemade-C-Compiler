@@ -1,5 +1,3 @@
-
-
 void mat_transpose(int r, int c, float *out, float *in)
 {
 	int i, j;
@@ -105,7 +103,7 @@ void mat_copy(int r, int c, float *out, float *in)
 	}
 }
 
-void mat_copy_row(int r_in, int c_in, int r_out, int c_out, int r_start, int r_end, int c_off, float *out, float *in) {
+void mat_copy_row(int r_in, int c_in, int c_out, int r_start, int r_end, int c_off, float *out, float *in) {
 	int i, j;
 	for (i = r_start; i < r_end; ++i) {
 		for (j = 0; j < c_in; ++j) {
@@ -114,7 +112,7 @@ void mat_copy_row(int r_in, int c_in, int r_out, int c_out, int r_start, int r_e
 	}
 }
 
-void mat_copy_col(int r_in, int c_in, int r_out, int c_out, int c_start, int c_end, int r_off, float *out, float *in) {
+void mat_copy_col(int r_in, int c_in, int c_out, int c_start, int c_end, int r_off, float *out, float *in) {
 	int i, j;
 	for (i = 0; i < r_in; ++i) {
 		for (j = c_start; j < c_end; ++j) {
