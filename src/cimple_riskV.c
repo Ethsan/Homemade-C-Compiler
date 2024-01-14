@@ -400,7 +400,7 @@ void risc_assign(struct cimple_instr instruction, FILE *fp, register_manager *ma
 	manage_register(instruction, &risc_inst, 1, 0, 1, manager, fp);
 	if (instruction.scope_1 == CIMPLE_CONST) {
 		if (instruction.is_float) {
-			fprintf(fp, "li t0 %x\n", instruction.arg1);
+			fprintf(fp, "li t0 0x%x\n", instruction.arg1);
 			fprintf(fp, "fmv.s.x %s t0\n", risc_inst.register_result);
 		} else
 			fprintf(fp, "li %s %d\n", risc_inst.register_result, instruction.arg1);
@@ -441,7 +441,7 @@ void risc_add(struct cimple_instr instruction, FILE *fp, register_manager *manag
 	exchange_args_const(&instruction, &risc_inst);
 	if (instruction.scope_2 == CIMPLE_CONST) {
 		if (instruction.is_float) {
-			fprintf(fp, "li t0 %x\n", instruction.arg2);
+			fprintf(fp, "li t0 0x%x\n", instruction.arg2);
 			fprintf(fp, "fmv.s.x ft0 t0\n");
 			fprintf(fp, "fadd.s %s %s ft0\n", risc_inst.register_result, risc_inst.register_arg1);
 		} else
@@ -475,7 +475,7 @@ void risc_sub(struct cimple_instr instruction, FILE *fp, register_manager *manag
 	if (instruction.scope_2 == CIMPLE_CONST) {
 		if (instruction.is_float) {
 			// à traduire en hexa
-			fprintf(fp, "li t0 %x\n", *(uint32_t *)&instruction.arg2);
+			fprintf(fp, "li t0 0x%x\n", *(uint32_t *)&instruction.arg2);
 			fprintf(fp, "fmv.s.x ft0 t0\n");
 			fprintf(fp, "fsub.s %s %s ft0\n", risc_inst.register_result, risc_inst.register_arg1);
 		} else
@@ -507,7 +507,7 @@ void risc_mul(struct cimple_instr instruction, FILE *fp, register_manager *manag
 	exchange_args_const(&instruction, &risc_inst);
 	if (instruction.scope_2 == CIMPLE_CONST) {
 		if (instruction.is_float) {
-			fprintf(fp, "li t0 %x\n", instruction.arg2);
+			fprintf(fp, "li t0 0x%x\n", instruction.arg2);
 			fprintf(fp, "fmv.s.x ft0 t0\n");
 			fprintf(fp, "fmul.s %s %s ft0\n", risc_inst.register_result, risc_inst.register_arg1);
 		} else {
@@ -541,7 +541,7 @@ void risc_div(struct cimple_instr instruction, FILE *fp, register_manager *manag
 	manage_register(instruction, &risc_inst, 1, 1, 1, manager, fp);
 	if (instruction.scope_2 == CIMPLE_CONST) {
 		if (instruction.is_float) {
-			fprintf(fp, "li t0 %x\n", instruction.arg2);
+			fprintf(fp, "li t0 0x%x\n", instruction.arg2);
 			fprintf(fp, "fmv.s.x ft0 t0\n");
 			fprintf(fp, "fdiv.s %s %s ft0\n", risc_inst.register_result, risc_inst.register_arg1);
 		} else {
@@ -552,7 +552,7 @@ void risc_div(struct cimple_instr instruction, FILE *fp, register_manager *manag
 	}
 	if (instruction.scope_1 == CIMPLE_CONST) {
 		if (instruction.is_float) {
-			fprintf(fp, "li t0 %x\n", instruction.arg1);
+			fprintf(fp, "li t0 0x%x\n", instruction.arg1);
 			fprintf(fp, "fmv.s.x ft0 t0\n");
 			fprintf(fp, "fdiv.s %s ft0 %s\n", risc_inst.register_result, risc_inst.register_arg2);
 		} else {
@@ -714,7 +714,7 @@ void temp_register(struct cimple_instr instruction, risc_instruction *risc_inst,
 			if (instruction.arg1 == 0)
 				strcpy(risc_inst->register_arg1, "zero");
 			else {
-				fprintf(fp, "li t0 %x\n", instruction.arg1);
+				fprintf(fp, "li t0 0x%x\n", instruction.arg1);
 				fprintf(fp, "fmv.s.x ft0 t0\n");
 				strcpy(risc_inst->register_arg1, "ft0");
 			}
@@ -723,7 +723,7 @@ void temp_register(struct cimple_instr instruction, risc_instruction *risc_inst,
 			if (instruction.arg2 == 0)
 				strcpy(risc_inst->register_arg2, "zero");
 			else {
-				fprintf(fp, "li t1 %x\n", instruction.arg2);
+				fprintf(fp, "li t1 0x%x\n", instruction.arg2);
 				fprintf(fp, "fmv.s.x ft1 t1\n");
 				strcpy(risc_inst->register_arg2, "ft1");
 			}
@@ -954,7 +954,7 @@ void risc_param(struct cimple_instr instruction, FILE *fp, register_manager *man
 		max_arg = 7; // cas du syscall car on met le numéro de la fonction dans a7
 	if (instruction.scope_1 == CIMPLE_CONST) {
 		if (instruction.is_float) {
-			fprintf(fp, "li t0 %x\n", instruction.arg1);
+			fprintf(fp, "li t0 0x%x\n", instruction.arg1);
 			if (instruction.arg2 < max_arg)
 				fprintf(fp, "fmv.s.x fa%s t0\n", risc_inst.register_arg2);
 			// les argument doivent être donnés dans l'ordre décroissant
@@ -992,7 +992,7 @@ void risc_return(struct cimple_instr instruction, FILE *fp, register_manager *ma
 	manage_register(instruction, &risc_inst, 1, 0, 0, manager, fp);
 	if (instruction.scope_1 == CIMPLE_CONST) {
 		if (instruction.is_float) {
-			fprintf(fp, "li t0 %x\n", instruction.arg1);
+			fprintf(fp, "li t0 0x%x\n", instruction.arg1);
 			fprintf(fp, "fmv.s.x fa0 t0\n");
 		} else
 			fprintf(fp, "li a0 %d\n", instruction.arg1);
