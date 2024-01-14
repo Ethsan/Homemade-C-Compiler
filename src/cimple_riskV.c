@@ -64,7 +64,6 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 					if (is_in(manager->register_float, 12, var[j], &index)) {
 						var_use[index] = 1;
 					}
-					
 				}
 			}
 		}
@@ -1150,13 +1149,77 @@ void label_used(struct cimple_function cimple_func, int **label_use, int *nb_lab
 	}
 }
 
+char *sanitize_string(char *str, int str_len)
+{
+	int count_backslash = 0;
+	for (int i = 0; i < str_len; i++) {
+		if (str[i] == '\n' || str[i] == '\t' || str[i] == '\r' || str[i] == '\v' || str[i] == '\f' ||
+		    str[i] == '\b' || str[i] == '\a' || str[i] == '\\')
+			count_backslash++;
+	}
+	char *new_str = malloc((str_len + count_backslash + 1) * sizeof(char));
+	error_malloc(new_str);
+	int j = 0;
+	for (int i = 0; i < str_len; i++) {
+		switch (str[i]) {
+		case '\n':
+			new_str[j] = '\\';
+			new_str[j + 1] = 'n';
+			j += 2;
+			break;
+		case '\t':
+			new_str[j] = '\\';
+			new_str[j + 1] = 't';
+			j += 2;
+			break;
+		case '\r':
+			new_str[j] = '\\';
+			new_str[j + 1] = 'r';
+			j += 2;
+			break;
+		case '\v':
+			new_str[j] = '\\';
+			new_str[j + 1] = 'v';
+			j += 2;
+			break;
+		case '\f':
+			new_str[j] = '\\';
+			new_str[j + 1] = 'f';
+			j += 2;
+			break;
+		case '\b':
+			new_str[j] = '\\';
+			new_str[j + 1] = 'b';
+			j += 2;
+			break;
+		case '\a':
+			new_str[j] = '\\';
+			new_str[j + 1] = 'a';
+			j += 2;
+			break;
+		case '\\':
+			new_str[j] = '\\';
+			new_str[j + 1] = '\\';
+			j += 2;
+			break;
+		default:
+			new_str[j] = str[i];
+			j++;
+			break;
+		}
+	}
+	return new_str;
+}
+
 int process_cimple(struct cimple_program program, FILE *fp)
 {
 	fprintf(fp, ".data\n");
 	for (int i = 0; i < (int)program.decl_size; i++) {
 		struct cimple_string string = program.decls[i];
 		fprintf(fp, "decl_%d : \n", string.uid);
-		fprintf(fp, ".asciz \"%s\"\n", string.str);
+		char *str = sanitize_string(string.str, string.size);
+		fprintf(fp, ".asciz \"%s\"\n", str);
+		free(str);
 	}
 	fprintf(fp, ".text\n");
 
@@ -1165,7 +1228,7 @@ int process_cimple(struct cimple_program program, FILE *fp)
 	// chargement de argc et argv non géré donc sont mis à 0
 	fprintf(fp, "li a0 0\n");
 	fprintf(fp, "li a1 0\n");
-	fprintf(fp, "jal func_%d\n",program.uid_main); // on appelle le main
+	fprintf(fp, "jal func_%d\n", program.uid_main); // on appelle le main
 	fprintf(fp, "li a7 93\n"); // on quitte le programme
 	fprintf(fp, "ecall\n");
 
