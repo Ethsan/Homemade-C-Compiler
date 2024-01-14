@@ -754,7 +754,7 @@ void rics_greater(struct cimple_instr instruction, FILE *fp, register_manager *m
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	printf("blt %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
+	fprintf(fp,"blt %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
 }
 
 void risc_less(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -762,7 +762,7 @@ void risc_less(struct cimple_instr instruction, FILE *fp, register_manager *mana
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	printf("blt %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp,"blt %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
 }
 
 void risc_greater_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -770,7 +770,7 @@ void risc_greater_eq(struct cimple_instr instruction, FILE *fp, register_manager
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	printf("bge %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp,"bge %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
 }
 
 void risc_less_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -778,7 +778,7 @@ void risc_less_eq(struct cimple_instr instruction, FILE *fp, register_manager *m
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	printf("bge %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
+	fprintf(fp,"bge %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
 }
 
 void risc_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -786,7 +786,7 @@ void risc_eq(struct cimple_instr instruction, FILE *fp, register_manager *manage
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	printf("beq %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp,"beq %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
 }
 
 void risc_not_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -794,7 +794,7 @@ void risc_not_eq(struct cimple_instr instruction, FILE *fp, register_manager *ma
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	printf("bne %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp,"bne %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
 }
 
 void risk_convert_to_int(struct cimple_instr instruction, FILE *fp, register_manager *manager)
