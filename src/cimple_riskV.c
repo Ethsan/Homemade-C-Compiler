@@ -702,7 +702,7 @@ void risc_xor(struct cimple_instr instruction, FILE *fp, register_manager *manag
 
 void risc_goto(struct cimple_instr instruction, FILE *fp)
 {
-	fprintf(fp, "j labe_%d\n", instruction.ret);
+	fprintf(fp, "j label_%d\n", instruction.ret);
 }
 
 // place un entier dans un registre temporaire pour effectuer les opérations
@@ -753,7 +753,7 @@ void rics_greater(struct cimple_instr instruction, FILE *fp, register_manager *m
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp, "blt %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
+	fprintf(fp, "blt %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.ret);
 }
 
 void risc_less(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -761,7 +761,7 @@ void risc_less(struct cimple_instr instruction, FILE *fp, register_manager *mana
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp, "blt %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp, "blt %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
 }
 
 void risc_greater_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -769,7 +769,7 @@ void risc_greater_eq(struct cimple_instr instruction, FILE *fp, register_manager
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp, "bge %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp, "bge %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
 }
 
 void risc_less_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -777,7 +777,7 @@ void risc_less_eq(struct cimple_instr instruction, FILE *fp, register_manager *m
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp, "bge %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.uid);
+	fprintf(fp, "bge %s %s label_%d\n", risc_inst.register_arg2, risc_inst.register_arg1, instruction.ret);
 }
 
 void risc_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -785,7 +785,7 @@ void risc_eq(struct cimple_instr instruction, FILE *fp, register_manager *manage
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp, "beq %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp, "beq %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
 }
 
 void risc_not_eq(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -793,7 +793,7 @@ void risc_not_eq(struct cimple_instr instruction, FILE *fp, register_manager *ma
 	risc_instruction risc_inst;
 	manage_register(instruction, &risc_inst, 1, 1, 0, manager, fp);
 	temp_register(instruction, &risc_inst, fp);
-	fprintf(fp, "bne %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.uid);
+	fprintf(fp, "bne %s %s label_%d\n", risc_inst.register_arg1, risc_inst.register_arg2, instruction.ret);
 }
 
 void risk_convert_to_int(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -1267,11 +1267,14 @@ int process_cimple(struct cimple_program program, FILE *fp)
 		manager.current_func = &func;
 		manager.current_inst_index = 0;
 		manager.global_manager = NULL;
+		for(int i = 0 ;i< nb_label;i++){
+			printf( "label_%d :\n", label_use[i]);
+		}
 
 		for (int i = 0; i < (int)func.size; i++) {
 			struct cimple_instr instruction = func.instrs[i];
-			if (is_in(label_use, nb_label, i, NULL)) {
-				fprintf(fp, "labe_%d :\n", i);
+			if (is_in(label_use, nb_label, instruction.uid, NULL)) {
+				fprintf(fp, "label_%d :\n", instruction.uid);
 			}
 
 			switch (instruction.op) {
