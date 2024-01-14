@@ -1,46 +1,41 @@
 int printint(int num);
+int printf(char *string);
 int main()
 {
 	int a;
 	int b;
-	int c;
 
 	a = 1;
 	b = 1;
 	if (a && b) {
-		c = 1;
+		printf("ok\n");
 	} else {
-		c = 0;
+		printf("error\n");
 	}
-	printint(c);
 
 	b = 0;
 	if (a && b) {
-		c = 0;
+		printf("error\n");
 	} else {
-		c = 1;
+		printf("ok\n");
 	}
-	printint(c);
 
 	b = 1;
 	if (a || b) {
-		c = 1;
+		printf("ok\n");
 	} else {
-		c = 0;
+		printf("error\n");
 	}
-        printint(c);
         b=0;
 	if (a || b) {
-		c = 1;
+		printf("ok\n");
 	} else {
-		c = 0;
+		printf("error\n");
 	}
-	printint(c);
         a=0;
         if(a || b){
-                c = 0;
+                printf("error\n");
         } else {
-                c = 1;
+                printf("ok\n");
         }
-        printint(c);
 }

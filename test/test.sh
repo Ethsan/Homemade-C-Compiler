@@ -18,6 +18,7 @@
 # tableaux multi-dimensionnels entiers et floats
 ../main -o out/tab.s data/tab.c
 # matice
+
 # fonctions
 ../main -o out/fonctions.s data/fonctions.c
 
@@ -26,8 +27,8 @@
 # fonctions recursives factoriel
 ../main -o out/factoriel.s data/factoriel.c
 
-
 # printf printmat printint printfloat
 ../main -o out/print.s data/print.c
 
 #tous les test dans un même fichier
+../main -o out/all.s -c data/all.c
