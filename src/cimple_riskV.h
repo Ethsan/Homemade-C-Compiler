@@ -2,4 +2,4 @@
 #include <stdio.h>
 #include "cimple.h"
 
-int process_three_address(struct cimple_program program, FILE *fp);
+int process_cimple(struct cimple_program program, FILE *fp);

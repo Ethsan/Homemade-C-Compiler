@@ -11,27 +11,16 @@ extern void print_current_context(void);
 extern FILE *yyin;
 
 extern tree current_context;
-/*
-int main(int argc, char *argv[])
-{
-	yyparse();
-	print_current_context();
-	struct cimple_program *prog = cimplify(current_context);
-	cimple_dump_program(prog);
-}
-*/
-
-
 
 void cimple_test(struct cimple_program *prog)
 {
 	prog->decl_size = 0;
 	prog->func_size = 1;
 	prog->decls = NULL;
-	struct cimple_function *func = malloc(10 *sizeof(struct cimple_function));
+	struct cimple_function *func = malloc(10 * sizeof(struct cimple_function));
 	func[0].uid = 0;
 	func[0].size = 4;
-	struct cimple_instr *instr = malloc(50*sizeof(struct cimple_instr));
+	struct cimple_instr *instr = malloc(50 * sizeof(struct cimple_instr));
 	instr[0].op = OP_ASSIGN;
 	instr[0].arg1 = 5;
 	instr[0].arg2 = 0;
@@ -71,9 +60,9 @@ void cimple_test(struct cimple_program *prog)
 
 int main(int argc, char *argv[])
 {
-/*	args_t args;
-	init_args(&args); 
-	parse_args( argc, argv,&args);
+	args_t args;
+	init_args(&args);
+	parse_args(argc, argv, &args);
 	FILE *in = fopen(args.input_file, "r");
 	if (in == NULL) {
 		fprintf(stderr, "Error: cannot open file %s\n", args.input_file);
@@ -83,15 +72,12 @@ int main(int argc, char *argv[])
 	yyparse();
 	print_current_context();
 	struct cimple_program *prog = cimplify(current_context);
-	cimple_dump_program(prog);*/
-	struct cimple_program prog;
-	cimple_test(&prog);
+	cimple_dump_program(prog);
 	FILE *out = fopen("out.s", "w");
 	if (out == NULL) {
 		fprintf(stderr, "Error: cannot open file out.s\n");
 		return 1;
 	}
-	process_three_address(prog, out);
+	process_cimple(*prog, out);
 	return 0;
 }
-

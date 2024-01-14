@@ -1140,7 +1140,7 @@ void label_used(struct cimple_function cimple_func, int **label_use, int *nb_lab
 	}
 }
 
-int process_three_address(struct cimple_program program, FILE *fp)
+int process_cimple(struct cimple_program program, FILE *fp)
 {
 	fprintf(fp, ".data\n");
 	for(int i =0;i<(int)program.decl_size;i++){
