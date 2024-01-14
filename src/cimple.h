@@ -36,20 +36,14 @@ enum cimple_op {
 	OP_RETURN, // (OP_RETURN, var_retour, _, _)
 	OP_LD, // (OP_LD,address, _, uid)
 	OP_ST, // (OP_ST, address, uid, _)
-<<<<<<< HEAD
-	OP_ALLOC,
-	OP_FREE,
-=======
 	OP_ALLOC, // (OP_ALLOC, size, _, ret) ret est la variable dans laquelle il y a l'adresse
 	OP_FREE, // (OP_FREE,size,_,_) permet de free le dernier bloc alloué
-
->>>>>>> 6870e85 (cimple)
 };
 
 enum cimple_scope {
 	CIMPLE_NONE,
 	CIMPLE_LOCAL,
-	CIMPLE_DATA,
+	CIMPLE_TEXT,
 	CIMPLE_ARG,
 	CIMPLE_CONST,
 	CIMPLE_UID,
