@@ -107,7 +107,7 @@ int var_less_used(register_manager *manager, int var_is_float, int *index_var_le
 	exit(1);
 }
 
-// var t2 t3 utilisé pour les variable text et t2 t3 t4 ft1 ft2 ft3 pour les arguments
+// var t2 t3 utilisé pour les variable decl et t2 t3 t4 ft1 ft2 ft3 pour les arguments
 // renvoie 1 si il y a besoin de rétablir les registres après (que pour les arguments > 8)
 int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst, int use_arg1, int use_arg2,
 		    int use_ret, register_manager *manager, FILE *fp)
@@ -272,7 +272,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 			}
 			if (instruction.scope_1 == CIMPLE_TEXT) {
 				sprintf(risc_inst->register_arg1, "t2");
-				fprintf(fp, "la t2 text_%d\n", instruction.arg1);
+				fprintf(fp, "la t2 decl_%d\n", instruction.arg1);
 			}
 			if (instruction.scope_1 == CIMPLE_ARG) {
 				if (instruction.arg1 < 8)
@@ -316,7 +316,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 			}
 			if (instruction.scope_2 == CIMPLE_TEXT) {
 				sprintf(risc_inst->register_arg2, "t3");
-				fprintf(fp, "la t3 text_%d\n", instruction.arg2);
+				fprintf(fp, "la t3 decl_%d\n", instruction.arg2);
 			}
 			if (instruction.scope_2 == CIMPLE_ARG) {
 				if (instruction.arg2 < 8)
@@ -359,7 +359,7 @@ int manage_register(struct cimple_instr instruction, risc_instruction *risc_inst
 				}
 			}
 			if (instruction.scope_ret == CIMPLE_TEXT) {
-				fprintf(stderr, "Error: text in ret\n");
+				fprintf(stderr, "Error: decl in ret\n");
 				exit(1);
 			}
 			if (instruction.scope_ret == CIMPLE_ARG) {
@@ -1001,8 +1001,15 @@ void risc_return(struct cimple_instr instruction, FILE *fp, register_manager *ma
 		} else
 			fprintf(fp, "mv a0 %s\n", risc_inst.register_arg1);
 	}
+	// on rétablit les registres s
+	fprintf(fp, "addi sp t5 -%d\n", manager->nb_float * 4);
+	for(int i =0;i<12;i++)
+		fprintf(fp, "lw s%d -%d(sp)\n", i, (i+1) * 4);
+	for(int i =0;i<12;i++)
+		fprintf(fp, "flw fs%d -%d(sp)\n", i, (i+13) * 4);
 	fprintf(fp, "mv sp t6\n");
 	fprintf(fp, "jr ra\n");
+
 }
 
 void risc_ld(struct cimple_instr instruction, FILE *fp, register_manager *manager)
@@ -1023,6 +1030,31 @@ void risc_st(struct cimple_instr instruction, FILE *fp, register_manager *manage
 		fprintf(fp, "fsw %s 0(%s)\n", risc_inst.register_arg2, risc_inst.register_arg1);
 	} else
 		fprintf(fp, "sw %s 0(%s)\n", risc_inst.register_arg2, risc_inst.register_arg1);
+}
+
+void risc_alloc(struct cimple_instr instruction, FILE *fp, register_manager *manager)
+{
+	risc_instruction risc_inst;
+	manage_register(instruction, &risc_inst, 0, 0, 1, manager, fp);
+	if(instruction.scope_1 == CIMPLE_CONST){
+		fprintf(fp, "addi sp sp -%d\n", instruction.arg1); // à voir avec ethan si *4 ou pas
+	}
+	else{
+		fprintf(fp, "sub sp sp %s\n", risc_inst.register_arg1); // de même
+	}
+	fprintf(fp, "mv %s sp\n", risc_inst.register_result);
+}
+
+void risc_free(struct cimple_instr instruction, FILE *fp, register_manager *manager)
+{
+	risc_instruction risc_inst;
+	manage_register(instruction, &risc_inst, 0, 0, 1, manager, fp);
+	if(instruction.scope_1 == CIMPLE_CONST){
+		fprintf(fp, "addi sp sp %d\n", instruction.arg1); // à voir avec ethan si *4 ou pas
+	}
+	else{
+		fprintf(fp, "add sp sp %s\n", risc_inst.register_arg1); // de même
+	}
 }
 
 int is_goto(struct cimple_instr instruction)
@@ -1108,11 +1140,29 @@ void label_used(struct cimple_function cimple_func, int *label_use, int *nb_labe
 
 int process_three_address(struct cimple_program program, FILE *fp)
 {
+	fprintf(fp, ".data\n");
+	for(int i =0;i<(int)program.decl_size;i++){
+		struct cimple_string string = program.decls[i];
+		fprintf(fp, "decl_%d : \n", string.uid);
+		fprintf(fp, ".asciiz \"%s\"\n", string.str);
+	}
+	fprintf(fp, ".text\n");
+
+	// on crée un foncion qui va appeler le main
+	fprintf(fp, "start_end :\n");
+	// chargement de argc et argv non géré donc sont mis à 0
+	fprintf(fp, "li a0 0\n");
+	fprintf(fp, "li a1 0\n");
+	fprintf(fp, "jal func_0\n"); // on appelle le main
+	fprintf(fp, "li a7 10\n"); // on quitte le programme
+	fprintf(fp, "ecall\n");
+
+
 	for (int j = 0; j < (int)program.func_size; j++) {
 		struct cimple_function func = program.funcs[j];
-		int *label_use;
-		int *int_used;
-		int *float_used;
+		int *label_use = NULL;
+		int *int_used = NULL;
+		int *float_used = NULL;
 		int var_int = 0;
 		int var_float = 0;
 		int nb_label = 0;
@@ -1124,7 +1174,12 @@ int process_three_address(struct cimple_program program, FILE *fp)
 		fprintf(fp, "addi sp sp %d\n", -((var_int) * 4));
 		fprintf(fp, "mv t5 sp\n");
 		fprintf(fp, "addi sp sp %d\n", -((var_float) * 4));
-
+		// on push les anciens registres s
+		for(int i =0;i<12;i++)
+			fprintf(fp, "sw s%d -%d(sp)\n", i, (i+1) * 4);
+		for(int i =0;i<12;i++)
+			fprintf(fp, "fsw fs%d -%d(sp)\n", i, (i+13) * 4);
+		fprintf(fp, "addi sp sp -96\n");
 		// gestion des registres
 		register_manager manager;
 		manager.nb_int = var_int;
@@ -1221,6 +1276,7 @@ int process_three_address(struct cimple_program program, FILE *fp)
 				risc_param(instruction, fp, &manager);
 				break;
 			case OP_RETURN:
+				risc_return(instruction, fp, &manager);
 				break;
 			case OP_LD:
 				risc_ld(instruction, fp, &manager);
@@ -1229,8 +1285,10 @@ int process_three_address(struct cimple_program program, FILE *fp)
 				risc_st(instruction, fp, &manager);
 				break;
 			case OP_ALLOC:
+				risc_alloc(instruction, fp, &manager);
 				break;
 			case OP_FREE:
+				risc_free(instruction, fp, &manager);
 				break;
 			default:
 				fprintf(stderr, "Invalid operation: %d\n", instruction.op);
