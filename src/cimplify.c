@@ -1135,7 +1135,7 @@ void decl_builtin(struct cimple_program *prog, uint ecall, tree decl)
 	for (int i = 0; i < arg_count; i++) {
 		regs[i] = push_anon_reg();
 		struct cimple_instr instr = {
-			.op = OP_PARAM,
+			.op = OP_ASSIGN,
 			.uid = pc++,
 			.scope_ret = CIMPLE_LOCAL,
 			.ret = regs[i],
