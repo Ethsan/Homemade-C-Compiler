@@ -988,6 +988,19 @@ void cimplify_object_decl(struct cimple_function *func, tree var)
 	};
 	cimple_push_instr(func, temp);
 
+	uint reg_zero = push_anon_reg();
+	struct cimple_instr zero = {
+		.op = OP_ASSIGN,
+		.uid = pc++,
+		.scope_ret = CIMPLE_LOCAL,
+		.ret = reg_zero,
+		.scope_1 = CIMPLE_CONST,
+		.arg1 = 0,
+
+		.is_float = is_float,
+	};
+	cimple_push_instr(func, zero);
+
 	for (int i = 0; i < size; i++) {
 		// Store value
 		struct cimple_instr store = {
@@ -996,8 +1009,8 @@ void cimplify_object_decl(struct cimple_function *func, tree var)
 
 			.scope_1 = CIMPLE_LOCAL,
 			.arg1 = reg_addr,
-			.scope_2 = CIMPLE_CONST,
-			.arg2 = init[i].u,
+			.scope_2 = CIMPLE_LOCAL,
+			.arg2 = reg_zero,
 
 			.is_float = is_float,
 		};
@@ -1017,6 +1030,7 @@ void cimplify_object_decl(struct cimple_function *func, tree var)
 		cimple_push_instr(func, inc);
 	}
 
+	pop_reg();
 	pop_reg();
 	free(init);
 }
@@ -1150,6 +1164,10 @@ void cimplify_function(struct cimple_program *prog, tree func)
 		}
 		errx(EXIT_FAILURE, "cimplify_function: function without body");
 	}
+
+	tree main_ident = get_identifier("main", strlen("main"));
+	if (main_ident == DECL_NAME(func))
+		prog->uid_main = DECL_UID(func);
 
 	pc = 0;
 	stack.off = 0;

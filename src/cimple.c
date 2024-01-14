@@ -208,7 +208,8 @@ void cimple_print_instr(struct cimple_instr *instr)
 	cimple_print_reg(instr->scope_1, instr->arg1);
 	printf("\t");
 	cimple_print_reg(instr->scope_2, instr->arg2);
-	printf("\n");
+	printf("\t");
+	printf( instr->is_float ? "float\n" : "int\n");
 }
 
 void cimple_dump_program(struct cimple_program *prog)
