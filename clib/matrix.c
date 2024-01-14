@@ -49,7 +49,7 @@ void mat_div(int r1, int c1, int r2, int c2, float *out, float *in1, float *in2)
 		for (j = 0; j < c2; ++j) {
 			out[i * c2 + j] = 0;
 			for (k = 0; k < c1; ++k) {
-				out[i * c2 + j] += in1[i * c1 + k] * in2[k * c2 + j];
+				out[i * c2 + j] += in1[i * c1 + k] / in2[k * c2 + j];
 			}
 		}
 	}
