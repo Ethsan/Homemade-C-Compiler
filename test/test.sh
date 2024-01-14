@@ -37,3 +37,6 @@ cd ..
 
 #test matrice
 ./main -o test/out/matrix.s test/data/matrix.c
+
+#test matrice trnaspose
+./main -o test/out/transpose.s test/data/transpose.c

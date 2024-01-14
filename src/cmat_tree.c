@@ -293,7 +293,7 @@ tree build_arg_list_trans(int r, int c, tree out, tree in)
 	tree arg_list = NULL;
 	tree arg;
 	arg = new_node(TREE_LIST, new_integer(r));
-	arg_list = chain_append(arg_list, arg);
+	arg_list = arg;
 	arg = new_node(TREE_LIST, new_integer(c));
 	arg_list = chain_append(arg_list, arg);
 	arg = new_node(TREE_LIST, out);
@@ -306,7 +306,6 @@ tree build_arg_list_trans(int r, int c, tree out, tree in)
 tree cmat_build_unary_expr(enum tree_code code, tree expr)
 {
 	if (!is_matrix_array(TREE_TYPE(expr))) {
-		printf("Not matrix\n");
 		return build_unary_expr(code, expr);
 	}
 	tree type = TREE_TYPE(expr);

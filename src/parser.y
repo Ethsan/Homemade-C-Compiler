@@ -202,7 +202,7 @@ unary_expression
 		$$ = cmat_build_unary_expr(PRE_DECR_EXPR, $2);
 	}
 	| unary_operator cast_expression {
-		$$ = build_unary_expr($1, $2);
+		$$ = cmat_build_unary_expr($1, $2);
 	}
 	| SIZEOF unary_expression {
 		$$ = build_sizeof(TREE_TYPE($2));
