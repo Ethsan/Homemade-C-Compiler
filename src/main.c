@@ -4,6 +4,7 @@
 #include "cimplify.h"
 #include "args.h"
 #include "cimple_riskV.h"
+#include <string.h>
 
 extern int yyparse(void);
 extern FILE *yyin;
@@ -75,7 +76,8 @@ int main(int argc, char *argv[])
 	struct cimple_program *prog = cimplify(current_context);
 	if (args.print_cimple)
 		cimple_dump_program(prog);
-	FILE *out = fopen("out.s", "w");
+	
+	FILE *out = fopen(args.output_file, "w");
 	if (out == NULL) {
 		fprintf(stderr, "Error: cannot open file out.s\n");
 		return 1;

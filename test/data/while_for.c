@@ -1,9 +1,15 @@
+int printint(int i);
+
 int main()
 {
-	int a,i;
+	int a, i;
 	a = 0;
-	for ( i = 0; i < 10; i++ ) {
-		a++;
-	}
-	return a;
+        i = 0;
+	while( i < 10 ){
+
+                a++;
+        }
+	printint(a);
+
+	return 0;
 }

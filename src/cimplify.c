@@ -1095,8 +1095,10 @@ void cimplify_block(struct cimple_function *func, tree block)
 	}
 }
 
-#define PRIMITIVES_COUNT 1
+#define PRIMITIVES_COUNT 3
 #define PRINTF "printf"
+#define PRINTINT "printint"
+#define PRINTFLOAT "printfloat"
 
 struct {
 	tree ident;
@@ -1107,6 +1109,10 @@ void init_builtins()
 {
 	primitives[0].ident = get_identifier(PRINTF, strlen(PRINTF));
 	primitives[0].ecall = 4;
+	primitives[1].ident = get_identifier(PRINTINT, strlen(PRINTINT));
+	primitives[1].ecall = 1;
+	primitives[2].ident = get_identifier(PRINTFLOAT, strlen(PRINTFLOAT));
+	primitives[2].ecall = 2;
 }
 
 void decl_builtin(struct cimple_program *prog, uint ecall, tree decl)
