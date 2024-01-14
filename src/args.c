@@ -11,17 +11,34 @@ void help(void)
 {
 	fprintf(stdout, "Usage: ./main [OPTION]... [FILE IN]\n");
 	fprintf(stdout, "Options:\n");
+	fprintf(stdout, "\t-o [OUT FILE]\t\tOutput file\n");
+	fprintf(stdout, "\t-a\t\t\tPrint AST\n");
+	fprintf(stdout, "\t-version\t\tVersion\n");
+	fprintf(stdout, "\t-tos\t\t\tSymbol table\n");
+	fprintf(stdout, "\t-c\t\t\tPrint cimple code\n");
+	fprintf(stdout, "\t-h\t\t\tHelp\n");
 	/*liste des options
 	-o : output
 	-h : help
-
+	-a : print AST
+	-version : version
+	-tos : symbol table
+	-c : print cimple code
 	*/
+}
+
+void version(void)
+{
+	fprintf(stdout, "Version 0.0.7\n");
 }
 
 void init_args(args_t *args)
 {
 	args->input_file = NULL;
 	args->output_file = NULL;
+	args->print_ast = 0;
+	args->print_symbol_table = 0;
+	args->print_cimple = 0;
 }
 int parse_args(int argc, char *argv[], args_t *args)
 {
@@ -29,7 +46,7 @@ int parse_args(int argc, char *argv[], args_t *args)
 	int err = 0;
 	(void)err;
 
-	while ((c = getopt(argc, argv, "hi:o:")) != -1) {
+	while ((c = getopt(argc, argv, "o:ahct:v:")) != -1) {
 		switch (c) {
 		case 'o':
 			args->output_file = optarg;
@@ -37,6 +54,28 @@ int parse_args(int argc, char *argv[], args_t *args)
 		case 'h':
 			help();
 			exit(0);
+		case 'a':
+			args->print_ast = 1;
+			break;
+		case 'c':
+			args->print_cimple = 1;
+			break;
+		case 't':
+			// check if -tos or -t
+			if (strcmp(optarg, "os") == 0)
+				args->print_symbol_table = 1;
+			else {
+				fprintf(stderr, "Unknown option -t%s\n", optarg);
+				err = 1;
+			}
+			break;
+		case 'v':
+			if (strcmp(optarg, "ersion") == 0) {
+				version();
+				exit(0);
+			} else
+				fprintf(stderr, "Unknown option -v%s\n", optarg);
+
 		case '?':
 
 			if (optopt == 'o' || optopt == 'i') {
@@ -66,11 +105,9 @@ int parse_args(int argc, char *argv[], args_t *args)
 		fprintf(stderr, "No input file\n");
 		err = 1;
 	}
-	
-	for (int i = optind+1; i < argc; i++)
+
+	for (int i = optind + 1; i < argc; i++)
 		printf("Non-option argument %s\n", argv[i]);
-
-
 
 	check_args(args);
 	return 0;

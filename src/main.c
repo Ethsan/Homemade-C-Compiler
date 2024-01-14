@@ -6,13 +6,11 @@
 #include "cimple_riskV.h"
 
 extern int yyparse(void);
-
-extern void print_current_context(void);
 extern FILE *yyin;
 
 extern tree current_context;
 
-void cimple_test(struct cimple_program *prog)
+/*void cimple_test(struct cimple_program *prog)
 {
 	prog->decl_size = 0;
 	prog->func_size = 1;
@@ -56,7 +54,7 @@ void cimple_test(struct cimple_program *prog)
 
 	func[0].instrs = instr;
 	prog->funcs = func;
-}
+}*/
 
 int main(int argc, char *argv[])
 {

@@ -1,6 +1,10 @@
 typedef struct args_t {
 	char *input_file;
 	char *output_file;
+	int print_ast;
+	int print_cimple;
+	int print_symbol_table;
+
 } args_t;
 
 void help(void);
