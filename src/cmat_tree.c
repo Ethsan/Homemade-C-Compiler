@@ -2,6 +2,7 @@
 #include "tree.h"
 
 #include <err.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -156,7 +157,7 @@ tree build_arg_list_copy(int r_in, int c_in, int c_out, int start, int end, int 
 	tree arg_list = NULL;
 	tree arg;
 	arg = new_node(TREE_LIST, new_integer(r_in));
-	arg_list = chain_append(arg_list, arg);
+	arg_list = arg;
 	arg = new_node(TREE_LIST, new_integer(c_in));
 	arg_list = chain_append(arg_list, arg);
 	arg = new_node(TREE_LIST, new_integer(c_out));
@@ -218,18 +219,18 @@ tree cmat_build_array_ref(tree array, tree extractor_list)
 			tree extr = TREE_TYPE(iter);
 			tree arg_list = NULL;
 			if (extr == NULL) {
-				arg_list = build_arg_list_copy(array_r, array_c, anon_c, 0, array_r, off, new_matrix,
+				arg_list = build_arg_list_copy(array_r, array_c, anon_c, 0, array_r, off, anon_decl,
 							       array);
 				off += array_r;
 			} else if (is_range(extr)) {
 				int start = INT_VALUE(TREE_TYPE(extr));
 				int end = INT_VALUE(TREE_TYPE(TREE_CHAIN(extr)));
 				arg_list =
-					build_arg_list_copy(array_r, array_c, anon_c, start, end, 0, new_matrix, array);
+					build_arg_list_copy(array_r, array_c, anon_c, start, end, 0, anon_decl, array);
 				off += end - start + 1;
 			} else if (TREE_CODE(extr) == INTEGER_CST) {
 				int val = INT_VALUE(extr);
-				arg_list = build_arg_list_copy(array_r, array_c, anon_c, val, val + 1, 0, new_matrix,
+				arg_list = build_arg_list_copy(array_r, array_c, anon_c, val, val + 1, 0, anon_decl,
 							       array);
 				off += 1;
 			} else {
@@ -242,12 +243,12 @@ tree cmat_build_array_ref(tree array, tree extractor_list)
 				expr = build_expr(COMPOUND_EXPR, expr, build_expr(CALL_EXPR, copy_row_ident, arg_list));
 			}
 		}
-		expr = build_expr(COMPOUND_EXPR, expr, new_matrix);
+		expr = build_expr(COMPOUND_EXPR, expr, anon_decl);
 	} else {
 		int anon_r = array_r;
 		int anon_c = total_len;
 
-		tree new_matrix = cmat_build_first_extraction(anon_r, anon_c);
+		tree new_matrix = cmat_build_matrix_array(anon_r, anon_c);
 		tree anon_decl = new_node(VARIABLE_DECL, new_matrix);
 		emit_decl(anon_decl);
 
@@ -258,18 +259,18 @@ tree cmat_build_array_ref(tree array, tree extractor_list)
 			tree extr = TREE_TYPE(iter);
 			tree arg_list = NULL;
 			if (extr == NULL) {
-				arg_list = build_arg_list_copy(array_r, array_c, anon_c, 0, array_c, off, new_matrix,
+				arg_list = build_arg_list_copy(array_r, array_c, anon_c, 0, array_c, off, anon_decl,
 							       array);
 				off += array_c;
 			} else if (is_range(extr)) {
 				int start = INT_VALUE(TREE_TYPE(extr));
 				int end = INT_VALUE(TREE_TYPE(TREE_CHAIN(extr)));
 				arg_list =
-					build_arg_list_copy(array_r, array_c, anon_c, start, end, 0, new_matrix, array);
+					build_arg_list_copy(array_r, array_c, anon_c, start, end, 0, anon_decl, array);
 				off += end - start + 1;
 			} else if (TREE_CODE(extr) == INTEGER_CST) {
 				int val = INT_VALUE(extr);
-				arg_list = build_arg_list_copy(array_r, array_c, anon_c, val, val + 1, 0, new_matrix,
+				arg_list = build_arg_list_copy(array_r, array_c, anon_c, val, val + 1, 0, anon_decl,
 							       array);
 				off += 1;
 			} else {
@@ -282,7 +283,7 @@ tree cmat_build_array_ref(tree array, tree extractor_list)
 				expr = build_expr(COMPOUND_EXPR, expr, build_expr(CALL_EXPR, copy_col_ident, arg_list));
 			}
 		}
-		expr = build_expr(COMPOUND_EXPR, expr, new_matrix);
+		expr = build_expr(COMPOUND_EXPR, expr, anon_decl);
 	}
 	return expr;
 }
@@ -305,6 +306,7 @@ tree build_arg_list_trans(int r, int c, tree out, tree in)
 tree cmat_build_unary_expr(enum tree_code code, tree expr)
 {
 	if (!is_matrix_array(TREE_TYPE(expr))) {
+		printf("Not matrix\n");
 		return build_unary_expr(code, expr);
 	}
 	tree type = TREE_TYPE(expr);
@@ -443,11 +445,20 @@ tree cmat_build_expr(enum tree_code code, tree left, tree right)
 		if (!is_matrix_same_size(left, right)) {
 			errx(EXIT_FAILURE, "Matrix assignment requires matrices of the same size");
 		}
-		tree matrix = cmat_build_matrix_array(lrow, lcol);
 		tree ident = get_decl_by_name("mat_copy");
-		tree arg_list = build_get_arg_list_sum(lrow, lcol, matrix, left, right);
+		tree arg_list = NULL;
+		tree arg;
+		arg = new_node(TREE_LIST, new_integer(lrow));
+		arg_list = arg;
+		arg = new_node(TREE_LIST, new_integer(lcol));
+		arg_list = chain_append(arg_list, arg);
+		arg = new_node(TREE_LIST, left);
+		arg_list = chain_append(arg_list, arg);
+		arg = new_node(TREE_LIST, right);
+		arg_list = chain_append(arg_list, arg);
+
 		tree call = build_expr(CALL_EXPR, ident, arg_list);
-		tree expr = build_expr(COMPOUND_EXPR, call, matrix);
+		tree expr = build_expr(COMPOUND_EXPR, call, left);
 		return expr;
 	}
 	default:

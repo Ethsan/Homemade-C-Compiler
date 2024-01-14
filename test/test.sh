@@ -34,3 +34,6 @@ cd ..
 
 #tous les test dans un même fichier
 ./main -o test/out/all.s -c test/data/all.c
+
+#test matrice
+./main -o test/out/matrix.s test/data/matrix.c
