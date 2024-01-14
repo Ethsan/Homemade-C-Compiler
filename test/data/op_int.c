@@ -12,5 +12,28 @@ int main(){
         printint(b);
         printf("\n");
 
+        c = b - a;
+        printf("b - a : ");
+        printint(c);
+        printf("\n");
+        c = b *a;
+        printf("b * a : ");
+        printint(c);
+        printf("\n");
+        c = b / a;
+        printf("b / a : ");
+        printint(c);
+        printf("\n");
+
+        c = b % a;
+        printf("b % a : ");
+        printint(c);
+        printf("\n");
+
+        c = -a;
+        printf("-a : ");
+        printint(c);
+        printf("\n");
+
         
 }
