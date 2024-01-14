@@ -339,6 +339,7 @@ void cimplify_expr(struct cimple_function *func, tree expr, uint ret)
 			.ret = ret,
 			.scope_1 = CIMPLE_LOCAL,
 			.arg1 = ret,
+			.is_float = is_float,
 		};
 		cimple_push_instr(func, instr);
 		break;
