@@ -251,10 +251,10 @@ void cimplify_assign_expr(struct cimple_function *func, tree to, uint from)
 		struct cimple_instr instr = {
 			.op = OP_ASSIGN,
 			.uid = pc++,
-			.scope_ret = CIMPLE_ARG,
-			.ret = idx,
-			.scope_1 = CIMPLE_LOCAL,
-			.arg1 = from,
+			.scope_ret = CIMPLE_LOCAL,
+			.ret = from,
+			.scope_1 = CIMPLE_ARG,
+			.arg1 = idx,
 			.is_float = is_float,
 		};
 		cimple_push_instr(func, instr);
