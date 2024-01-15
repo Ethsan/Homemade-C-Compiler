@@ -87,7 +87,7 @@ do		{ return DO; }
 if		{ return IF; }
 static		{ return STATIC; }
 while		{ return WHILE; }
-print_mat	{ return PRINT_MAT; }
+printmat	{ return PRINT_MAT; }
 matrix		{ return MATRIX; }
 
 	/* Operators */
