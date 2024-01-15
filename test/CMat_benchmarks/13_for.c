@@ -8,4 +8,3 @@ int main() {
   }
   print(a);
 }
-/* 42 */

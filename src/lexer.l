@@ -199,20 +199,6 @@ L\"{S_CHAR_SEQUENCE}\" {
 	/* Whitespace */
 [ \t]+ { /* ignore whitespace */ }
 
-// skip comment
-"/*" {
-	int c;
-	while((c = input()) != EOF) {
-		if(c == '\n') {
-			lineno++;
-			column = 1;
-		}
-		if(c == '*' && input() == '/') {
-			break;
-		}
-	}
-	}
-
 . {
 	return yytext[0];
 }

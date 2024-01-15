@@ -11,7 +11,7 @@ int main() {
 	int valeur; 
         valeur = 10;
 	
-	printint(Fibonacci(valeur));
+	print(Fibonacci(valeur));
 	
 	return 0;
 
