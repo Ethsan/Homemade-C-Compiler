@@ -1040,7 +1040,7 @@ void cimplify_block(struct cimple_function *func, tree block)
 
 #define PRIMITIVES_COUNT 3
 #define PRINTF "printf"
-#define PRINTINT "printint"
+#define PRINTINT "print"
 #define PRINTFLOAT "printfloat"
 
 struct {
